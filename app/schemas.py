@@ -1,35 +1,15 @@
-from pydantic import BaseModel
+import uuid
+
+from fastapi_users import schemas
 
 
-class ItemBase(BaseModel):
-    title: str
-    description: str | None = None
-
-
-class ItemCreate(ItemBase):
+class UserRead(schemas.BaseUser[uuid.UUID]):
     pass
 
 
-class Item(ItemBase):
-    id: int
-    owner_id: int
-
-    class Config:
-        orm_mode = True
+class UserCreate(schemas.BaseUserCreate):
+    pass
 
 
-class UserBase(BaseModel):
-    email: str
-
-
-class UserCreate(UserBase):
-    password: str
-
-
-class User(UserBase):
-    id: int
-    is_active: bool
-    items: list[Item] = []
-
-    class Config:
-        orm_mode = True
+class UserUpdate(schemas.BaseUserUpdate):
+    pass
