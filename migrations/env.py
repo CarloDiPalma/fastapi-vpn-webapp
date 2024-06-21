@@ -80,7 +80,7 @@ def run_migrations_online() -> None:
 
     with connectable.connect() as connection:
         context.configure(
-            connection=connection, target_metadata=target_metadata
+            connection=connection, target_metadata=target_metadata, compare_server_default=True
         )
 
         with context.begin_transaction():
