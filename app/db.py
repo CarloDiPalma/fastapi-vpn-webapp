@@ -22,10 +22,12 @@ class Base(DeclarativeBase):
 
 class User(SQLAlchemyBaseUserTable[int], Base):
     id = Column(Integer, primary_key=True)
-    tgid: int = Column(BigInteger, unique=True, nullable=False)
+    tg_id: int = Column(BigInteger, unique=True, nullable=False)
     subscription: str = Column(
         String(length=1024), default='none', nullable=False
     )
+    username: str = Column(String(length=1024), nullable=False)
+    full_name: str = Column(String(length=1024), nullable=False)
     hashed_password: str = Column(String(length=1024), nullable=False)
     is_active: bool = Column(Boolean, default=True, nullable=False)
     is_trial: bool = Column(Boolean, default=True, nullable=False)
