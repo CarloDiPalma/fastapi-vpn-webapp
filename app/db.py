@@ -1,16 +1,12 @@
 from datetime import datetime
-from sqlalchemy import (
-    Column, String, Boolean, Integer, TIMESTAMP, ForeignKey, BigInteger
-)
-
 from typing import AsyncGenerator
 
 from fastapi import Depends
 from fastapi_users.db import SQLAlchemyBaseUserTable, SQLAlchemyUserDatabase
-from sqlalchemy.ext.asyncio import (
-    AsyncSession, async_sessionmaker, create_async_engine
-)
-
+from sqlalchemy import (TIMESTAMP, BigInteger, Boolean, Column, ForeignKey,
+                        Integer, String)
+from sqlalchemy.ext.asyncio import (AsyncSession, async_sessionmaker,
+                                    create_async_engine)
 from sqlalchemy.orm import DeclarativeBase
 
 DATABASE_URL = "sqlite+aiosqlite:///./test.db"

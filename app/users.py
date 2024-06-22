@@ -1,13 +1,9 @@
-import uuid
 from typing import Optional
 
 from fastapi import Depends, Request, exceptions
 from fastapi_users import BaseUserManager, FastAPIUsers, exceptions
-from fastapi_users.authentication import (
-    AuthenticationBackend,
-    BearerTransport,
-    JWTStrategy,
-)
+from fastapi_users.authentication import (AuthenticationBackend,
+                                          BearerTransport, JWTStrategy)
 from fastapi_users.db import SQLAlchemyUserDatabase
 
 from app import schemas
@@ -90,6 +86,6 @@ auth_backend = AuthenticationBackend(
     get_strategy=get_jwt_strategy,
 )
 
-fastapi_users = FastAPIUsers[User, uuid.UUID](get_user_manager, [auth_backend])
+fastapi_users = FastAPIUsers[User, int](get_user_manager, [auth_backend])
 
 current_active_user = fastapi_users.current_user(active=True)
