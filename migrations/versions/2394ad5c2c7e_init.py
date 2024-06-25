@@ -1,8 +1,8 @@
 """Init
 
-Revision ID: de10fdb0bd30
+Revision ID: 2394ad5c2c7e
 Revises: 
-Create Date: 2024-06-25 16:09:06.609480
+Create Date: 2024-06-25 16:30:45.195424
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'de10fdb0bd30'
+revision: str = '2394ad5c2c7e'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -24,6 +24,11 @@ def upgrade() -> None:
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(length=1024), nullable=False),
     sa.Column('description', sa.String(length=1024), nullable=True),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_table('protocol',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('name', sa.String(length=100), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('server',
@@ -42,6 +47,7 @@ def upgrade() -> None:
     sa.Column('username', sa.String(length=1024), nullable=False),
     sa.Column('full_name', sa.String(length=1024), nullable=False),
     sa.Column('parent_id', sa.Integer(), nullable=True),
+    sa.Column('protocol_id', sa.Integer(), nullable=True),
     sa.Column('hashed_password', sa.String(length=1024), nullable=False),
     sa.Column('is_active', sa.Boolean(), nullable=False),
     sa.Column('is_trial', sa.Boolean(), nullable=False),
@@ -50,6 +56,7 @@ def upgrade() -> None:
     sa.Column('registered_at', sa.TIMESTAMP(), nullable=False),
     sa.Column('email', sa.String(length=320), nullable=False),
     sa.ForeignKeyConstraint(['parent_id'], ['user.id'], ),
+    sa.ForeignKeyConstraint(['protocol_id'], ['protocol.id'], ),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('tg_id')
     )
@@ -62,5 +69,6 @@ def downgrade() -> None:
     op.drop_index(op.f('ix_user_email'), table_name='user')
     op.drop_table('user')
     op.drop_table('server')
+    op.drop_table('protocol')
     op.drop_table('plan')
     # ### end Alembic commands ###

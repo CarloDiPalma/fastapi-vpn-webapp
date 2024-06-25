@@ -23,6 +23,7 @@ class User(SQLAlchemyBaseUserTable[int], Base):
     username: str = Column(String(length=1024), nullable=False)
     full_name: str = Column(String(length=1024), nullable=False)
     parent_id = mapped_column(Integer, ForeignKey("user.id"), nullable=True)
+    protocol_id = mapped_column(Integer, ForeignKey("protocol.id"), nullable=True)
     hashed_password: str = Column(String(length=1024), nullable=False)
     is_active: bool = Column(Boolean, default=True, nullable=False)
     is_trial: bool = Column(Boolean, default=True, nullable=False)
@@ -54,3 +55,12 @@ class Server(Base):
     is_active: bool = Column(Boolean, default=False, nullable=False)
     description: str = Column(String(length=1024), nullable=True)
     user_count: int = Column(BigInteger, nullable=True)
+
+
+class Protocol(Base):
+    __tablename__ = 'protocol'
+
+    id = Column(Integer, primary_key=True)
+    name: str = Column(
+        String(length=100), nullable=False
+    )

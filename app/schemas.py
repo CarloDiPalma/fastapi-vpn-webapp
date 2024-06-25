@@ -14,7 +14,8 @@ class UserCreate(schemas.BaseUserCreate):
     tg_id: int
     username: str
     full_name: str
-    parent_id: int
+    parent_id: Optional[int]
+    protocol_id: Optional[int]
     is_active: Optional[bool] = True
     is_superuser: Optional[bool] = False
     is_verified: Optional[bool] = False
