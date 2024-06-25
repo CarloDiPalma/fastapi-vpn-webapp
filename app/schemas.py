@@ -1,7 +1,7 @@
 from typing import Optional
 
 from fastapi_users import schemas
-from pydantic import EmailStr
+from pydantic import EmailStr, BaseModel
 
 
 class UserRead(schemas.BaseUser):
@@ -23,3 +23,7 @@ class UserCreate(schemas.BaseUserCreate):
 
 class UserUpdate(schemas.BaseUserUpdate):
     pass
+
+
+class Protocol(BaseModel):
+    name: str
