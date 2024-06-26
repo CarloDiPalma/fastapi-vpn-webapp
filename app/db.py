@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import (AsyncSession, async_sessionmaker,
 
 from app.models import Base, User
 
-DATABASE_URL = "sqlite+aiosqlite:///./test.db"
+DATABASE_URL = "sqlite+aiosqlite:///./db.sqlite3"
 
 
 # database = databases.Database(DATABASE_URL)
