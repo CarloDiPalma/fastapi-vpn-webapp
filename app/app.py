@@ -1,6 +1,8 @@
 from contextlib import asynccontextmanager
+from typing import List
 
 from fastapi import Depends, FastAPI
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
@@ -59,10 +61,12 @@ async def create_book(protocol: ProtocolSchema, db: Session = Depends(get_db)):
     await db.refresh(db_protocol)
     return db_protocol
 
-# @app.get("/books/", response_model=List[schemas.Book])
-# def read_books(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
-#     books = db.query(models.Book).offset(skip).limit(limit).all()
-#     return books
+
+@app.get("/protocol/", response_model=List[ProtocolSchema])
+async def read_books(skip: int = 0, limit: int = 10, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Protocol).offset(skip).limit(limit))
+    books = result.scalars().all()
+    return books
 
 
 @app.get("/authenticated-route")
