@@ -44,4 +44,4 @@ async def test_create_protocol(async_client):
     assert response.status_code == 200
     data = response.json()
     assert data["name"] == "Test Protocol"
-    # assert "id" in data
+    assert "id" in data

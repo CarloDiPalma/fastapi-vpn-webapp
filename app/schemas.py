@@ -27,3 +27,7 @@ class UserUpdate(schemas.BaseUserUpdate):
 
 class Protocol(BaseModel):
     name: str
+
+
+class ProtocolOut(Protocol):
+    id: int

@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from app.db import User, create_db_and_tables, async_session_maker
 from app.models import Protocol
 from app.schemas import (
-    UserCreate, UserRead, UserUpdate, Protocol as ProtocolSchema
+    UserCreate, UserRead, UserUpdate, Protocol as ProtocolIn, ProtocolOut
 )
 from app.users import auth_backend, current_active_user, fastapi_users
 
@@ -53,8 +53,8 @@ async def get_db() -> AsyncSession:
         yield session
 
 
-@app.post("/protocol", response_model=ProtocolSchema)
-async def create_book(protocol: ProtocolSchema, db: Session = Depends(get_db)):
+@app.post("/protocol", response_model=ProtocolOut)
+async def create_book(protocol: ProtocolIn, db: Session = Depends(get_db)):
     db_protocol = Protocol(name=protocol.name)
     db.add(db_protocol)
     await db.commit()
@@ -62,7 +62,7 @@ async def create_book(protocol: ProtocolSchema, db: Session = Depends(get_db)):
     return db_protocol
 
 
-@app.get("/protocol/", response_model=List[ProtocolSchema])
+@app.get("/protocol/", response_model=List[ProtocolOut])
 async def read_books(skip: int = 0, limit: int = 10, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(Protocol).offset(skip).limit(limit))
     books = result.scalars().all()
