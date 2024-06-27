@@ -14,14 +14,14 @@ from app.schemas import (
 from app.users import auth_backend, current_active_user, fastapi_users
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # Not needed if you setup a migration system like Alembic
-    await create_db_and_tables()
-    yield
+# @asynccontextmanager
+# async def lifespan(app: FastAPI):
+#     # Not needed if you setup a migration system like Alembic
+#     await create_db_and_tables()
+#     yield
 
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI()
 
 app.include_router(
     fastapi_users.get_auth_router(auth_backend), prefix="/auth/jwt", tags=["auth"]
@@ -54,7 +54,11 @@ async def get_db() -> AsyncSession:
 
 
 @app.post("/protocol", response_model=ProtocolOut)
-async def create_book(protocol: ProtocolIn, db: Session = Depends(get_db)):
+async def create_book(
+        protocol: ProtocolIn,
+        db: Session = Depends(get_db),
+        user: User = Depends(current_active_user)
+):
     db_protocol = Protocol(name=protocol.name)
     db.add(db_protocol)
     await db.commit()
