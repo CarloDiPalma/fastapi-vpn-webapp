@@ -75,6 +75,8 @@ async def get_user_manager(user_db: SQLAlchemyUserDatabase = Depends(get_user_db
 
 bearer_transport = BearerTransport(tokenUrl="auth/jwt/login")
 
+jwt_authentication = JWTStrategy(secret=SECRET, lifetime_seconds=3600)
+
 
 def get_jwt_strategy() -> JWTStrategy:
     return JWTStrategy(secret=SECRET, lifetime_seconds=3600)
@@ -90,4 +92,5 @@ fastapi_users = FastAPIUsers(get_user_manager, [auth_backend])
 
 
 current_active_user = fastapi_users.current_user(active=True)
+
 

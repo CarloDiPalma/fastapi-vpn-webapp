@@ -1,31 +1,35 @@
-from contextlib import asynccontextmanager
+import os
 from typing import List
-
-from fastapi import Depends, FastAPI
+from urllib.parse import unquote
+from dotenv import load_dotenv
+from fastapi import Depends, FastAPI, HTTPException, Request
+from pydantic import ValidationError
+from starlette.responses import JSONResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
-from app.db import User, create_db_and_tables, async_session_maker
+from app.db import User, async_session_maker
 from app.models import Protocol
 from app.permissions import superuser_only
 from app.schemas import (
     UserCreate, UserRead, UserUpdate, Protocol as ProtocolIn, ProtocolOut
 )
-from app.users import auth_backend, current_active_user, fastapi_users
+from app.users import auth_backend, current_active_user, fastapi_users, \
+    jwt_authentication
+from app.utils import AuthData, validate_data_check_string, validate_init_data
+
+load_dotenv()
 
 
-# @asynccontextmanager
-# async def lifespan(app: FastAPI):
-#     # Not needed if you setup a migration system like Alembic
-#     await create_db_and_tables()
-#     yield
-
+BOT_TOKEN = os.getenv('BOT_TOKEN')
 
 app = FastAPI()
 
 app.include_router(
-    fastapi_users.get_auth_router(auth_backend), prefix="/auth/jwt", tags=["auth"]
+    fastapi_users.get_auth_router(auth_backend),
+    prefix="/auth/jwt",
+    tags=["auth"]
 )
 app.include_router(
     fastapi_users.get_register_router(UserRead, UserCreate),
@@ -86,3 +90,39 @@ async def authenticated_route(user: User = Depends(current_active_user)):
 @app.get("/admin/")
 async def read_admin_data(user: dict = Depends(superuser_only)):
     return {"msg": "This is admin data", "user": user}
+
+
+@app.post("/auth")
+async def auth(data: AuthData):
+    data_check_string = unquote(data.data_check_string)
+
+    if not validate_data_check_string(data_check_string):
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid data_check_string format"
+        )
+    if validate_init_data(data_check_string, BOT_TOKEN):
+        return {"status": "success"}
+    else:
+        raise HTTPException(status_code=401, detail="Wrong hash")
+
+
+@app.post("/custom-token")
+async def generate_custom_token(
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(select(User).filter(User.tg_id == 200))
+    user = result.scalars().first()
+    token = await jwt_authentication.write_token(user)
+    return {"token": token}
+
+
+@app.exception_handler(ValidationError)
+async def validation_exception_handler(request: Request, exc: ValidationError):
+    return JSONResponse(
+        status_code=400,
+        content={"detail": exc.errors()}
+    )
+
+
+
