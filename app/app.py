@@ -15,15 +15,16 @@ from app.permissions import superuser_only
 from app.schemas import (
     UserCreate, UserRead, UserUpdate, Protocol as ProtocolIn, ProtocolOut
 )
-from app.users import auth_backend, current_active_user, fastapi_users, \
-    jwt_authentication
-from app.utils import AuthData, validate_data_check_string, validate_init_data
+from app.users import auth_backend, current_active_user, fastapi_users
+from app.utils import (
+    AuthData, validate_data_check_string, validate_init_data,
+    get_user_from_db, extract_user_id, generate_custom_token
+)
 
 load_dotenv()
 
 
 BOT_TOKEN = os.getenv('BOT_TOKEN')
-
 app = FastAPI()
 
 app.include_router(
@@ -60,9 +61,9 @@ async def get_db() -> AsyncSession:
 
 @app.post("/protocol", response_model=ProtocolOut)
 async def create_protocol(
-        protocol: ProtocolIn,
-        db: Session = Depends(get_db),
-        user: User = Depends(current_active_user)
+    protocol: ProtocolIn,
+    db: Session = Depends(get_db),
+    user: User = Depends(current_active_user)
 ):
     db_protocol = Protocol(name=protocol.name)
     db.add(db_protocol)
@@ -73,9 +74,9 @@ async def create_protocol(
 
 @app.get("/protocol/", response_model=List[ProtocolOut])
 async def get_protocols(
-        skip: int = 0,
-        limit: int = 10,
-        db: AsyncSession = Depends(get_db),
+    skip: int = 0,
+    limit: int = 10,
+    db: AsyncSession = Depends(get_db),
 ):
 
     result = await db.execute(select(Protocol).offset(skip).limit(limit))
@@ -93,7 +94,10 @@ async def read_admin_data(user: dict = Depends(superuser_only)):
 
 
 @app.post("/auth")
-async def auth(data: AuthData):
+async def auth(
+    data: AuthData,
+    db: AsyncSession = Depends(get_db),
+):
     data_check_string = unquote(data.data_check_string)
 
     if not validate_data_check_string(data_check_string):
@@ -102,19 +106,12 @@ async def auth(data: AuthData):
             detail="Invalid data_check_string format"
         )
     if validate_init_data(data_check_string, BOT_TOKEN):
-        return {"status": "success"}
+        user_info = extract_user_id(data_check_string)
+        user = await get_user_from_db(user_info, db)
+        response = await generate_custom_token(user)
+        return response
     else:
         raise HTTPException(status_code=401, detail="Wrong hash")
-
-
-@app.post("/custom-token")
-async def generate_custom_token(
-    db: AsyncSession = Depends(get_db),
-):
-    result = await db.execute(select(User).filter(User.tg_id == 200))
-    user = result.scalars().first()
-    token = await jwt_authentication.write_token(user)
-    return {"token": token}
 
 
 @app.exception_handler(ValidationError)

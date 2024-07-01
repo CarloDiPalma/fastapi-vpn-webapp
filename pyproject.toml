@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "salam bot"
+version = "0.1.0"
+description = "Telegram VPN WebApp Bot on FastAPI and Postgres"
+authors = ["CarloDiPalma <ping.06@mail.ru>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
