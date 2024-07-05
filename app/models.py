@@ -1,9 +1,9 @@
 from datetime import datetime
-
-from fastapi_users.db import SQLAlchemyBaseUserTable
+from typing import Generic, TYPE_CHECKING
+from fastapi_users.models import ID
 from sqlalchemy import (TIMESTAMP, BigInteger, Boolean, Column, ForeignKey,
                         Integer, String, MetaData, DateTime)
-from sqlalchemy.orm import DeclarativeBase, mapped_column
+from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped
 
 metadata = MetaData()
 
@@ -12,7 +12,27 @@ class Base(DeclarativeBase):
     metadata = metadata
 
 
-class User(SQLAlchemyBaseUserTable[int], Base):
+class CustomSQLAlchemyBaseUserTable(Generic[ID]):
+    """Base SQLAlchemy users table definition."""
+
+    __tablename__ = "user"
+
+    if TYPE_CHECKING:  # pragma: no cover
+        id: ID
+        is_active: bool
+        is_superuser: bool
+        is_verified: bool
+    else:
+        is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+        is_superuser: Mapped[bool] = mapped_column(
+            Boolean, default=False, nullable=False
+        )
+        is_verified: Mapped[bool] = mapped_column(
+            Boolean, default=False, nullable=False
+        )
+
+
+class User(CustomSQLAlchemyBaseUserTable[int], Base):
     __tablename__ = 'user'
 
     id = Column(Integer, primary_key=True)
@@ -24,7 +44,6 @@ class User(SQLAlchemyBaseUserTable[int], Base):
     full_name: str = Column(String(length=1024), nullable=False)
     parent_id = mapped_column(Integer, ForeignKey("user.id"), nullable=True)
     protocol_id = mapped_column(Integer, ForeignKey("protocol.id"), nullable=True)
-    hashed_password: str = Column(String(length=1024), nullable=False)
     is_active: bool = Column(Boolean, default=True, nullable=False)
     is_trial: bool = Column(Boolean, default=True, nullable=False)
     is_superuser: bool = Column(Boolean, default=False, nullable=False)
