@@ -14,9 +14,6 @@ from app.models import User
 from app.users import jwt_authentication
 
 
-
-
-
 def validate_data_check_string(data_check_string: str) -> bool:
     try:
         data_check_array = data_check_string.split('&')
@@ -64,10 +61,8 @@ def extract_user_id(data_check_string):
     return None
 
 
-async def get_user_from_db(
-    user_info: dict,
-    db: AsyncSession,
-) -> User:
+async def get_user_from_db(user_info: dict, db: AsyncSession) -> User:
+    """Get or create user instance from telegram data."""
     tg_id = user_info['id']
     result = await db.execute(select(User).filter(User.tg_id == tg_id))
     user = result.scalars().first()
@@ -76,8 +71,7 @@ async def get_user_from_db(
     else:
         user = User(
             tg_id=tg_id, username=user_info['username'],
-            full_name=user_info['first_name'] + user_info['last_name'],
-            hashed_password='ds', email='asd@mail.com'
+            full_name=user_info['first_name'] + user_info['last_name']
         )
         db.add(user)
         await db.commit()
@@ -86,14 +80,13 @@ async def get_user_from_db(
 
 
 async def simple_get_user_from_db(pk: int, db: AsyncSession) -> User:
+    """Get User object for development and tests."""
     result = await db.execute(select(User).filter(User.id == pk))
     user = result.scalars().first()
     if user:
         return user
 
 
-async def generate_custom_token(
-    user: User
-):
+async def generate_custom_token(user: User):
     token = await jwt_authentication.write_token(user)
     return {"token": token}

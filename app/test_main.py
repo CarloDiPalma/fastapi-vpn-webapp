@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import sessionmaker
 
 from app.models import User
-from app.utils import generate_custom_token
+from app.utils import generate_custom_token, get_user_from_db
 
 SQLALCHEMY_DATABASE_URL = "sqlite+aiosqlite:///./test.db"
 TestSessionLocal = sessionmaker(
@@ -63,6 +63,19 @@ async def auth_token(create_test_user):
 async def test_generate_custom_token(create_test_user):
     access_token = await generate_custom_token(create_test_user)
     assert "token" in access_token
+
+
+@pytest.mark.asyncio
+async def test_get_user_from_db():
+    user_dict = {
+        "id": 800,
+        "username": "TEST_USERNAME",
+        "first_name": "TEST_FIRST_NAME",
+        "last_name": "TEST_LAST_NAME"
+    }
+    async with TestSessionLocal() as session:
+        user = await get_user_from_db(user_dict, session)
+    assert isinstance(user, User)
 
 
 @pytest.mark.asyncio
