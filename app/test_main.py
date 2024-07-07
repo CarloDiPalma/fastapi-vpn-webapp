@@ -42,7 +42,7 @@ async def async_client():
 
 
 @pytest_asyncio.fixture(scope="module")
-async def create_test_user():
+async def create_test_user(async_client):
     async with TestSessionLocal() as session:
         # Создаем тестового пользователя
         user = User(tg_id=20, username="TEST_USER", full_name="TEST_FULL_NAME")
@@ -54,10 +54,15 @@ async def create_test_user():
 
 @pytest_asyncio.fixture(scope="module")
 async def auth_token(create_test_user):
-    async with TestSessionLocal() as session:
-        # Создаем токен для этого пользователя
-        access_token = await generate_custom_token(create_test_user)
-        return access_token.get('token')
+    # Создаем токен для тестового пользователя
+    access_token = await generate_custom_token(create_test_user)
+    return access_token.get('token')
+
+
+@pytest.mark.asyncio
+async def test_generate_custom_token(create_test_user):
+    access_token = await generate_custom_token(create_test_user)
+    assert "token" in access_token
 
 
 @pytest.mark.asyncio
