@@ -13,12 +13,14 @@ from app.db import User, async_session_maker
 from app.models import Protocol
 from app.permissions import superuser_only
 from app.schemas import (
-    UserCreate, UserRead, UserUpdate, Protocol as ProtocolIn, ProtocolOut
+    UserCreate, UserRead, UserUpdate, Protocol as ProtocolIn, ProtocolOut,
+    AuthData, SimpleAuthData,
 )
 from app.users import auth_backend, current_active_user, fastapi_users
 from app.utils import (
-    AuthData, validate_data_check_string, validate_init_data,
-    get_user_from_db, extract_user_id, generate_custom_token
+    validate_data_check_string, validate_init_data,
+    get_user_from_db, extract_user_id, generate_custom_token,
+    simple_get_user_from_db
 )
 
 load_dotenv()
@@ -28,17 +30,7 @@ BOT_TOKEN = os.getenv('BOT_TOKEN')
 app = FastAPI()
 
 app.include_router(
-    fastapi_users.get_auth_router(auth_backend),
-    prefix="/auth/jwt",
-    tags=["auth"]
-)
-app.include_router(
     fastapi_users.get_register_router(UserRead, UserCreate),
-    prefix="/auth",
-    tags=["auth"],
-)
-app.include_router(
-    fastapi_users.get_reset_password_router(),
     prefix="/auth",
     tags=["auth"],
 )
@@ -112,6 +104,14 @@ async def auth(
         return response
     else:
         raise HTTPException(status_code=401, detail="Wrong hash")
+
+
+@app.post("/simple-auth")
+async def auth(data: SimpleAuthData, db: AsyncSession = Depends(get_db)):
+    user_id = data.id
+    user = await simple_get_user_from_db(user_id, db)
+    response = await generate_custom_token(user)
+    return response
 
 
 @app.exception_handler(ValidationError)

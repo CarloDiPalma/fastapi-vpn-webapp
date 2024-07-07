@@ -11,6 +11,7 @@ class UserCreate(BaseModel):
     full_name: str
     parent_id: Optional[int]
     protocol_id: Optional[int]
+    plan_id: Optional[int]
     is_active: Optional[bool] = True
     is_superuser: Optional[bool] = False
     is_verified: Optional[bool] = False
@@ -24,6 +25,7 @@ class UserRead(BaseModel):
     full_name: str
     parent_id: int
     protocol_id: int
+    plan_id: Optional[int]
     is_active: bool
     is_trial: bool
     is_superuser: bool
@@ -34,8 +36,20 @@ class UserRead(BaseModel):
         from_attributes = True
 
 
-class UserUpdate(schemas.BaseUserUpdate):
-    pass
+class UserUpdate(BaseModel):
+    id: int
+    username: str
+    tg_id: int
+    subscription: str
+    full_name: str
+    parent_id: int
+    protocol_id: int
+    plan_id: Optional[int]
+    is_active: bool
+    is_trial: bool
+    is_superuser: bool
+    is_verified: bool
+    registered_at: datetime
 
 
 class Protocol(BaseModel):
@@ -43,4 +57,12 @@ class Protocol(BaseModel):
 
 
 class ProtocolOut(Protocol):
+    id: int
+
+
+class AuthData(BaseModel):
+    data_check_string: str
+
+
+class SimpleAuthData(BaseModel):
     id: int

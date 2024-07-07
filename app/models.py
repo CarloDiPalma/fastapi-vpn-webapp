@@ -23,7 +23,9 @@ class CustomSQLAlchemyBaseUserTable(Generic[ID]):
         is_superuser: bool
         is_verified: bool
     else:
-        is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+        is_active: Mapped[bool] = mapped_column(
+            Boolean, default=True, nullable=False
+        )
         is_superuser: Mapped[bool] = mapped_column(
             Boolean, default=False, nullable=False
         )
@@ -43,12 +45,19 @@ class User(CustomSQLAlchemyBaseUserTable[int], Base):
     username: str = Column(String(length=1024), nullable=False)
     full_name: str = Column(String(length=1024), nullable=False)
     parent_id = mapped_column(Integer, ForeignKey("user.id"), nullable=True)
-    protocol_id = mapped_column(Integer, ForeignKey("protocol.id"), nullable=True)
+    protocol_id = mapped_column(
+        Integer, ForeignKey("protocol.id"), nullable=True
+    )
+    plan_id = mapped_column(
+        Integer, ForeignKey("plan.id"), nullable=True
+    )
     is_active: bool = Column(Boolean, default=True, nullable=False)
     is_trial: bool = Column(Boolean, default=True, nullable=False)
     is_superuser: bool = Column(Boolean, default=False, nullable=False)
     is_verified: bool = Column(Boolean, default=False, nullable=False)
-    registered_at = Column(TIMESTAMP(timezone=False), nullable=False, default=datetime.utcnow)
+    registered_at = Column(
+        TIMESTAMP(timezone=False), nullable=False, default=datetime.utcnow
+    )
 
 
 class Plan(Base):
@@ -83,3 +92,24 @@ class Protocol(Base):
     name: str = Column(
         String(length=100), nullable=False
     )
+
+
+class Payment(Base):
+    __tablename__ = 'payment'
+
+    id = Column(Integer, primary_key=True)
+    description: str = Column(
+        String(length=128), nullable=True
+    )
+    created_at = Column(
+        TIMESTAMP(timezone=False), nullable=False, default=datetime.utcnow
+    )
+    amount: int = Column(Integer, nullable=False)
+
+    user_id = mapped_column(
+        Integer, ForeignKey("user.id")
+    )
+    plan_id = mapped_column(
+        Integer, ForeignKey("plan.id")
+    )
+    outstanding_balance: int = Column(Integer)

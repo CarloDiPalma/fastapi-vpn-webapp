@@ -14,8 +14,7 @@ from app.models import User
 from app.users import jwt_authentication
 
 
-class AuthData(BaseModel):
-    data_check_string: str
+
 
 
 def validate_data_check_string(data_check_string: str) -> bool:
@@ -83,6 +82,13 @@ async def get_user_from_db(
         db.add(user)
         await db.commit()
         await db.refresh(user)
+        return user
+
+
+async def simple_get_user_from_db(pk: int, db: AsyncSession) -> User:
+    result = await db.execute(select(User).filter(User.id == pk))
+    user = result.scalars().first()
+    if user:
         return user
 
 
