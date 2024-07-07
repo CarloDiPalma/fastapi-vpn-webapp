@@ -22,9 +22,43 @@ class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
         safe: bool = False,
         request: Optional[Request] = None,
     ) -> User:
-        created_user = await self.user_db.create(user_create.dict())
+        user_dict = (
+            user_create.create_update_dict()
+            if safe
+            else user_create.create_update_dict_superuser()
+        )
+        created_user = await self.user_db.create(user_dict)
         await self.on_after_register(created_user, request)
         return created_user
+
+    async def update(
+        self,
+        user_update: schemas.UserUpdate,
+        user: User,
+        safe: bool = False,
+        request: Optional[Request] = None,
+    ) -> User:
+        """
+        Update a user.
+
+        Triggers the on_after_update handler on success
+
+        :param user_update: The UserUpdate model containing
+        the changes to apply to the user.
+        :param user: The current user to update.
+        :param safe: If True, sensitive values like is_superuser or is_verified
+        will be ignored during the update, defaults to False
+        :param request: Optional FastAPI request that
+        triggered the operation, defaults to None.
+        :return: The updated user.
+        """
+        if safe:
+            updated_user_data = user_update.create_update_dict()
+        else:
+            updated_user_data = user_update.create_update_dict_superuser()
+        updated_user = await self._update(user, updated_user_data)
+        await self.on_after_update(updated_user, updated_user_data, request)
+        return updated_user
 
     async def on_after_register(self, user: User, request: Optional[Request] = None):
         print(f"User {user.id} has registered.")

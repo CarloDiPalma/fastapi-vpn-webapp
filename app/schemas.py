@@ -2,10 +2,11 @@ from datetime import datetime
 from typing import Optional
 
 from fastapi_users import schemas
+from fastapi_users.schemas import BaseUserUpdate, CreateUpdateDictModel
 from pydantic import EmailStr, BaseModel
 
 
-class UserCreate(BaseModel):
+class UserCreate(CreateUpdateDictModel):
     tg_id: int
     username: str
     full_name: str
@@ -36,7 +37,7 @@ class UserRead(BaseModel):
         from_attributes = True
 
 
-class UserUpdate(BaseModel):
+class UserUpdate(BaseUserUpdate):
     id: int
     username: str
     tg_id: int
