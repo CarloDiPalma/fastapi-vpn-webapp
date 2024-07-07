@@ -10,11 +10,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
 from app.db import User, async_session_maker
-from app.models import Protocol
+from app.models import Protocol, Payment
 from app.permissions import superuser_only
 from app.schemas import (
     UserCreate, UserRead, UserUpdate, Protocol as ProtocolIn, ProtocolOut,
-    AuthData, SimpleAuthData,
+    AuthData, SimpleAuthData, Payment as PaymentIn,
 )
 from app.users import auth_backend, current_active_user, fastapi_users
 from app.utils import (
@@ -73,6 +73,19 @@ async def get_protocols(
 
     result = await db.execute(select(Protocol).offset(skip).limit(limit))
     return result.scalars().all()
+
+
+@app.post("/payment")
+async def payment(
+    payment: PaymentIn,
+    db: Session = Depends(get_db),
+    user: User = Depends(current_active_user)
+):
+    db_payment = Payment(**payment.dict())
+    db.add(db_payment)
+    await db.commit()
+    await db.refresh(db_payment)
+    return db_payment
 
 
 @app.get("/authenticated-route")

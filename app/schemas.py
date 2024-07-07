@@ -53,6 +53,15 @@ class UserUpdate(BaseUserUpdate):
     registered_at: datetime
 
 
+class Payment(BaseModel):
+    description: str
+    created_at: datetime
+    amount: int
+    user_id: int
+    plan_id: int
+    outstanding_balance: int
+
+
 class Protocol(BaseModel):
     name: str
 
