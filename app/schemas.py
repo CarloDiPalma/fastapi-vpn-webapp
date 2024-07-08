@@ -3,7 +3,7 @@ from typing import Optional
 
 from fastapi_users import schemas
 from fastapi_users.schemas import BaseUserUpdate, CreateUpdateDictModel
-from pydantic import EmailStr, BaseModel
+from pydantic import EmailStr, BaseModel, ConfigDict
 
 
 class UserCreate(CreateUpdateDictModel):
@@ -55,11 +55,15 @@ class UserUpdate(BaseUserUpdate):
 
 class Payment(BaseModel):
     description: str
-    created_at: datetime
     amount: int
     user_id: int
     plan_id: int
     outstanding_balance: int
+
+
+class PaymentOut(Payment):
+    id: int
+    created_at: datetime
 
 
 class Protocol(BaseModel):

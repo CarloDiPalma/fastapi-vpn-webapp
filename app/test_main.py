@@ -1,20 +1,27 @@
+import os
+from pathlib import Path
+
 import pytest
 import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
 
-from app.app import get_db, app
+from app.app import get_db, app, BASE_DIR
 from app.db import Base, engine
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
 from app.models import User
 from app.utils import generate_custom_token, get_user_from_db
 
-SQLALCHEMY_DATABASE_URL = "sqlite+aiosqlite:///./test.db"
+TEST_DB_PATH = os.path.join(BASE_DIR, "test.db")
+TEST_DATABASE_URL = f"sqlite+aiosqlite:///{TEST_DB_PATH}"
+
+TestEngine = create_async_engine(TEST_DATABASE_URL, echo=True)
+
 TestSessionLocal = sessionmaker(
     autocommit=False,
     autoflush=False,
-    bind=engine,
+    bind=TestEngine,
     class_=AsyncSession
 )
 
@@ -22,6 +29,7 @@ TestSessionLocal = sessionmaker(
 async def override_get_db():
     async with TestSessionLocal() as session:
         yield session
+
 
 app.dependency_overrides[get_db] = override_get_db
 
@@ -32,13 +40,15 @@ async def async_client():
             transport=ASGITransport(app=app),
             base_url="http://test"
     ) as client:
-        async with engine.begin() as conn:
+        async with TestEngine.begin() as conn:
             # Создаем таблицы перед тестами
             await conn.run_sync(Base.metadata.create_all)
         yield client
-        async with engine.begin() as conn:
+        async with TestEngine.begin() as conn:
             # Удаляем таблицы после тестов
             await conn.run_sync(Base.metadata.drop_all)
+        if os.path.exists(TEST_DB_PATH):
+            os.remove(TEST_DB_PATH)
 
 
 @pytest_asyncio.fixture(scope="module")
@@ -76,6 +86,25 @@ async def test_get_user_from_db():
     async with TestSessionLocal() as session:
         user = await get_user_from_db(user_dict, session)
     assert isinstance(user, User)
+
+
+@pytest.mark.asyncio
+async def test_create_payment(async_client, auth_token):
+    """Authenticated user creates payment."""
+    response = await async_client.post(
+        "/payment",
+        json={
+            "description": "string",
+            "amount": 20,
+            "user_id": 1,
+            "plan_id": 1,
+            "outstanding_balance": 0
+        },
+        headers={"Authorization": f"Bearer {auth_token}"}
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert "id" in data
 
 
 @pytest.mark.asyncio

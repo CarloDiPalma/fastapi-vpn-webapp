@@ -53,7 +53,6 @@ def extract_user_id(data_check_string):
             '%22', '"').replace('%3A', ':').replace('%2C', ',')
         # Преобразуем строку в JSON-объект
         user_info = json.loads(user_data)
-        print(user_info)
         # Извлекаем 'id' из JSON-объекта
         # user_id = user_info.get('id')
         # return user_id

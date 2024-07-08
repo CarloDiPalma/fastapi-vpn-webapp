@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from typing import List
 from urllib.parse import unquote
 from dotenv import load_dotenv
@@ -25,7 +26,8 @@ from app.utils import (
 
 load_dotenv()
 
-
+BASE_DIR = Path(__file__).resolve().parent.parent
+TEST_DB_PATH = os.path.join(BASE_DIR, "test.db")
 BOT_TOKEN = os.getenv('BOT_TOKEN')
 app = FastAPI()
 
@@ -120,7 +122,7 @@ async def auth(
 
 
 @app.post("/simple-auth")
-async def auth(data: SimpleAuthData, db: AsyncSession = Depends(get_db)):
+async def simple_auth(data: SimpleAuthData, db: AsyncSession = Depends(get_db)):
     user_id = data.id
     user = await simple_get_user_from_db(user_id, db)
     response = await generate_custom_token(user)
