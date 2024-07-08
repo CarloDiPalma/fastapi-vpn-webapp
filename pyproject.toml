@@ -8,7 +8,7 @@ readme = "README.md"
 package-mode = false
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.11"
 aiosqlite = "0.20.0"
 alembic = "1.13.1"
 annotated-types = "0.6.0"
@@ -93,9 +93,10 @@ watchfiles = "0.21.0"
 websockets = "12.0"
 zipp = "3.19.2"
 yookassa = "^3.3.0"
+
+[tool.poetry.dev-dependencies]
 pytest = "^8.2.2"
 pytest-asyncio = "^0.23.7"
-
 
 [build-system]
 requires = ["poetry-core"]
