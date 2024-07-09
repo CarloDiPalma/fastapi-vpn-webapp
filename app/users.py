@@ -1,10 +1,11 @@
-from typing import Optional
+from typing import Optional, Union, Dict
 
 from fastapi import Depends, Request
 from fastapi_users import BaseUserManager, FastAPIUsers, IntegerIDMixin
 from fastapi_users.authentication import (AuthenticationBackend,
                                           BearerTransport, JWTStrategy)
 from fastapi_users.db import SQLAlchemyUserDatabase
+from sqlalchemy.exc import IntegrityError
 
 from app import schemas
 from app.db import User, get_user_db
@@ -21,13 +22,20 @@ class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
         user_create: schemas.UserCreate,
         safe: bool = False,
         request: Optional[Request] = None,
-    ) -> User:
+    ) -> Union[User, Dict[str, str]]:
         user_dict = (
             user_create.create_update_dict()
             if safe
             else user_create.create_update_dict_superuser()
         )
-        created_user = await self.user_db.create(user_dict)
+        try:
+            created_user = await self.user_db.create(user_dict)
+        except IntegrityError as e:
+            if 'UNIQUE constraint failed: user.tg_id' in str(e.orig):
+                return {
+                    "error": "Пользователь с таким tg_id уже существует"
+                }
+
         await self.on_after_register(created_user, request)
         return created_user
 
