@@ -1,15 +1,13 @@
 import os
-from pathlib import Path
 
 import pytest
 import pytest_asyncio
-from httpx import AsyncClient, ASGITransport
-
-from app.app import get_db, app, BASE_DIR
-from app.db import Base, engine
+from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
+from app.app import BASE_DIR, app, get_db
+from app.db import Base
 from app.models import User
 from app.utils import generate_custom_token, get_user_from_db
 

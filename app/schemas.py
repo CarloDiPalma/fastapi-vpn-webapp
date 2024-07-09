@@ -1,9 +1,8 @@
 from datetime import datetime
 from typing import Optional
 
-from fastapi_users import schemas
 from fastapi_users.schemas import BaseUserUpdate, CreateUpdateDictModel
-from pydantic import EmailStr, BaseModel, ConfigDict
+from pydantic import BaseModel
 
 
 class UserCreate(CreateUpdateDictModel):

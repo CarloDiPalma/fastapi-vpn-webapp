@@ -1,15 +1,11 @@
-import json
 import hashlib
 import hmac
+import json
+from urllib.parse import parse_qs, unquote
 
-from urllib.parse import unquote, parse_qs
-
-from fastapi import Depends
-from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-# from app.app import get_db
 from app.models import User
 from app.users import jwt_authentication
 

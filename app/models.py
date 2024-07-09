@@ -1,9 +1,10 @@
 from datetime import datetime
-from typing import Generic, TYPE_CHECKING
+from typing import TYPE_CHECKING, Generic
+
 from fastapi_users.models import ID
 from sqlalchemy import (TIMESTAMP, BigInteger, Boolean, Column, ForeignKey,
-                        Integer, String, MetaData, DateTime)
-from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped
+                        Integer, MetaData, String)
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 metadata = MetaData()
 

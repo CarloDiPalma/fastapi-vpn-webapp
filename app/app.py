@@ -2,27 +2,27 @@ import os
 from pathlib import Path
 from typing import List
 from urllib.parse import unquote
+
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, HTTPException, Request
 from pydantic import ValidationError
-from starlette.responses import JSONResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
+from starlette.responses import JSONResponse
 
 from app.db import User, async_session_maker
-from app.models import Protocol, Payment
+from app.models import Payment, Protocol
 from app.permissions import superuser_only
-from app.schemas import (
-    UserCreate, UserRead, UserUpdate, Protocol as ProtocolIn, ProtocolOut,
-    AuthData, SimpleAuthData, Payment as PaymentIn,
-)
-from app.users import auth_backend, current_active_user, fastapi_users
-from app.utils import (
-    validate_data_check_string, validate_init_data,
-    get_user_from_db, extract_user_id, generate_custom_token,
-    simple_get_user_from_db
-)
+from app.schemas import AuthData
+from app.schemas import Payment as PaymentIn
+from app.schemas import Protocol as ProtocolIn
+from app.schemas import (ProtocolOut, SimpleAuthData, UserCreate, UserRead,
+                         UserUpdate)
+from app.users import current_active_user, fastapi_users
+from app.utils import (extract_user_id, generate_custom_token,
+                       get_user_from_db, simple_get_user_from_db,
+                       validate_data_check_string, validate_init_data)
 
 load_dotenv()
 
@@ -122,7 +122,10 @@ async def auth(
 
 
 @app.post("/simple-auth")
-async def simple_auth(data: SimpleAuthData, db: AsyncSession = Depends(get_db)):
+async def simple_auth(
+    data: SimpleAuthData,
+    db: AsyncSession = Depends(get_db)
+):
     user_id = data.id
     user = await simple_get_user_from_db(user_id, db)
     response = await generate_custom_token(user)
@@ -135,6 +138,3 @@ async def validation_exception_handler(request: Request, exc: ValidationError):
         status_code=400,
         content={"detail": exc.errors()}
     )
-
-
-

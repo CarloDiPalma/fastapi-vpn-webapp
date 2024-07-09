@@ -1,9 +1,8 @@
 import os
 import uuid
 
-from yookassa import Payment, Configuration
-
 from dotenv import load_dotenv
+from yookassa import Configuration, Payment
 
 load_dotenv()
 
@@ -33,4 +32,3 @@ def create(amount, chat_id):
         "description": "Тестовый Заказ №1"
     }, id_key)
     return payment.confirmation.confirmation_url, payment.id
-
