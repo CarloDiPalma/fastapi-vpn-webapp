@@ -23,6 +23,7 @@ TestSessionLocal = sessionmaker(
     bind=test_engine, class_=AsyncSession, expire_on_commit=False
 )
 
+API_PREFIX = '/api'
 
 async def override_get_db():
     async with TestSessionLocal() as session:
@@ -90,7 +91,7 @@ async def test_get_user_from_db_function():
 async def test_create_payment(async_client, auth_token):
     """Authenticated user creates payment."""
     response = await async_client.post(
-        "/payment",
+        API_PREFIX + "/payment",
         json={
             "description": "string",
             "amount": 20,
@@ -108,7 +109,7 @@ async def test_create_payment(async_client, auth_token):
 @pytest.mark.asyncio
 async def test_create_protocol(async_client, auth_token):
     response = await async_client.post(
-        "/protocol",
+        API_PREFIX + "/protocol",
         json={"name": "Test Protocol"},
         headers={"Authorization": f"Bearer {auth_token}"}
     )

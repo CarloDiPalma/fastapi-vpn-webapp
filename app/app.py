@@ -4,7 +4,7 @@ from typing import List
 from urllib.parse import unquote
 
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi import Depends, FastAPI, HTTPException, Request, APIRouter
 from pydantic import ValidationError
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -31,24 +31,26 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 BOT_TOKEN = os.getenv('BOT_TOKEN')
 app = FastAPI()
 
-app.include_router(
+router = APIRouter(prefix="/api")
+
+router.include_router(
     fastapi_users.get_register_router(UserRead, UserCreate),
     prefix="/auth",
     tags=["auth"],
 )
-app.include_router(
+router.include_router(
     fastapi_users.get_verify_router(UserRead),
     prefix="/auth",
     tags=["auth"],
 )
-app.include_router(
+router.include_router(
     fastapi_users.get_users_router(UserRead, UserUpdate),
     prefix="/users",
     tags=["users"],
 )
 
 
-@app.post("/protocol", response_model=ProtocolOut)
+@router.post("/protocol", response_model=ProtocolOut)
 async def create_protocol(
     protocol: ProtocolIn,
     db: Session = Depends(get_db),
@@ -61,7 +63,7 @@ async def create_protocol(
     return db_protocol
 
 
-@app.get("/protocol/", response_model=List[ProtocolOut])
+@router.get("/protocol/", response_model=List[ProtocolOut])
 async def get_protocols(
     skip: int = 0,
     limit: int = 10,
@@ -71,7 +73,7 @@ async def get_protocols(
     return result.scalars().all()
 
 
-@app.post("/payment")
+@router.post("/payment")
 async def payment(
     payment: PaymentIn,
     db: Session = Depends(get_db),
@@ -84,22 +86,22 @@ async def payment(
     return db_payment
 
 
-@app.get("/authenticated-route")
+@router.get("/authenticated-route")
 async def authenticated_route(user: User = Depends(current_active_user)):
     return {"message": f"Hello {user.email}!"}
 
 
-@app.get("/some-endpoint")
+@router.get("/some-endpoint")
 async def some_route():
     return {"message": f"Hello!"}
 
 
-@app.get("/admin/")
+@router.get("/admin/")
 async def read_admin_data(user: dict = Depends(superuser_only)):
     return {"msg": "This is admin data", "user": user}
 
 
-@app.post("/auth")
+@router.post("/auth")
 async def auth(
     data: AuthData,
     db: AsyncSession = Depends(get_db),
@@ -120,7 +122,7 @@ async def auth(
         raise HTTPException(status_code=401, detail="Wrong hash")
 
 
-@app.post("/simple-auth")
+@router.post("/simple-auth")
 async def simple_auth(
     data: SimpleAuthData,
     db: AsyncSession = Depends(get_db)
@@ -137,3 +139,6 @@ async def validation_exception_handler(request: Request, exc: ValidationError):
         status_code=400,
         content={"detail": exc.errors()}
     )
+
+# Включаем основной маршрутизатор в приложение
+app.include_router(router)
