@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 from starlette.responses import JSONResponse
 
-from app.db import User, async_session_maker
+from app.db import User, async_session_maker, get_db
 from app.models import Payment, Protocol
 from app.permissions import superuser_only
 from app.schemas import AuthData
@@ -27,7 +27,7 @@ from app.utils import (extract_user_id, generate_custom_token,
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-TEST_DB_PATH = os.path.join(BASE_DIR, "test.db")
+
 BOT_TOKEN = os.getenv('BOT_TOKEN')
 app = FastAPI()
 
@@ -46,11 +46,6 @@ app.include_router(
     prefix="/users",
     tags=["users"],
 )
-
-
-async def get_db() -> AsyncSession:
-    async with async_session_maker() as session:
-        yield session
 
 
 @app.post("/protocol", response_model=ProtocolOut)
@@ -72,7 +67,6 @@ async def get_protocols(
     limit: int = 10,
     db: AsyncSession = Depends(get_db),
 ):
-
     result = await db.execute(select(Protocol).offset(skip).limit(limit))
     return result.scalars().all()
 
@@ -93,6 +87,11 @@ async def payment(
 @app.get("/authenticated-route")
 async def authenticated_route(user: User = Depends(current_active_user)):
     return {"message": f"Hello {user.email}!"}
+
+
+@app.get("/some-endpoint")
+async def some_route():
+    return {"message": f"Hello!"}
 
 
 @app.get("/admin/")

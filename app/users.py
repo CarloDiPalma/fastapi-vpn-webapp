@@ -35,7 +35,6 @@ class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
                 return {
                     "error": "Пользователь с таким tg_id уже существует"
                 }
-
         await self.on_after_register(created_user, request)
         return created_user
 

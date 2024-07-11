@@ -1,9 +1,10 @@
+import asyncio
 import os
 
 import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 
 from app.app import BASE_DIR, app, get_db
@@ -11,16 +12,15 @@ from app.db import Base
 from app.models import User
 from app.utils import generate_custom_token, get_user_from_db
 
+
 TEST_DB_PATH = os.path.join(BASE_DIR, "test.db")
 TEST_DATABASE_URL = f"sqlite+aiosqlite:///{TEST_DB_PATH}"
 
-TestEngine = create_async_engine(TEST_DATABASE_URL, echo=True)
-
+test_engine = create_async_engine(
+    TEST_DATABASE_URL, future=True, echo=True,
+)
 TestSessionLocal = sessionmaker(
-    autocommit=False,
-    autoflush=False,
-    bind=TestEngine,
-    class_=AsyncSession
+    bind=test_engine, class_=AsyncSession, expire_on_commit=False
 )
 
 
@@ -38,11 +38,11 @@ async def async_client():
             transport=ASGITransport(app=app),
             base_url="http://test"
     ) as client:
-        async with TestEngine.begin() as conn:
+        async with test_engine.begin() as conn:
             # Создаем таблицы перед тестами
             await conn.run_sync(Base.metadata.create_all)
         yield client
-        async with TestEngine.begin() as conn:
+        async with test_engine.begin() as conn:
             # Удаляем таблицы после тестов
             await conn.run_sync(Base.metadata.drop_all)
         if os.path.exists(TEST_DB_PATH):
@@ -74,7 +74,7 @@ async def test_generate_custom_token(create_test_user):
 
 
 @pytest.mark.asyncio
-async def test_get_user_from_db():
+async def test_get_user_from_db_function():
     user_dict = {
         "id": 800,
         "username": "TEST_USERNAME",
