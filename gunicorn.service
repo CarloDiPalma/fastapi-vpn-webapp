@@ -1,0 +1,14 @@
+[Unit]
+Description=gunicorn daemon for FastAPI app
+After=network.target
+
+[Service]
+User=root
+Group=www-data
+WorkingDirectory=/root/fastapi-vpn-webapp
+ExecStart=/root/fastapi-vpn-webapp/script.sh
+
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
