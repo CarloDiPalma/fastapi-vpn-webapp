@@ -18,7 +18,7 @@ buttons = InlineKeyboardMarkup(
     inline_keyboard=[
         [InlineKeyboardButton(
             text='ЗДЕСЬ WEBAPP!',
-            web_app=WebAppInfo(url='https://theproject.ddns.net/newpage')
+            web_app=WebAppInfo(url='https://vpntelegram.ru')
         )]
     ]
 )
