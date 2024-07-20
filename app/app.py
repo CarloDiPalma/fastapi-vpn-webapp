@@ -109,6 +109,7 @@ async def auth(
     data_check_string = unquote(data.data_check_string)
 
     if not validate_data_check_string(data_check_string):
+        print('invalid')
         raise HTTPException(
             status_code=400,
             detail="Invalid data_check_string format"
