@@ -101,15 +101,13 @@ async def read_admin_data(user: dict = Depends(superuser_only)):
     return {"msg": "This is admin data", "user": user}
 
 
-@router.post("/auth")
+@router.post("/auth", tags=["auth"])
 async def auth(
     data: AuthData,
     db: AsyncSession = Depends(get_db),
 ):
     data_check_string = unquote(data.data_check_string)
-
     if not validate_data_check_string(data_check_string):
-        print('invalid')
         raise HTTPException(
             status_code=400,
             detail="Invalid data_check_string format"
@@ -123,7 +121,7 @@ async def auth(
         raise HTTPException(status_code=401, detail="Wrong hash")
 
 
-@router.post("/simple-auth")
+@router.post("/simple-auth", tags=["auth"])
 async def simple_auth(
     data: SimpleAuthData,
     db: AsyncSession = Depends(get_db)
