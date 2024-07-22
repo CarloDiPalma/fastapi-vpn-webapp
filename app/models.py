@@ -3,14 +3,10 @@ from typing import TYPE_CHECKING, Generic
 
 from fastapi_users.models import ID
 from sqlalchemy import (TIMESTAMP, BigInteger, Boolean, Column, ForeignKey,
-                        Integer, MetaData, String)
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+                        Integer, String)
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-metadata = MetaData()
-
-
-class Base(DeclarativeBase):
-    metadata = metadata
+from app.db import Base
 
 
 class CustomSQLAlchemyBaseUserTable(Generic[ID]):
@@ -52,6 +48,8 @@ class User(CustomSQLAlchemyBaseUserTable[int], Base):
     plan_id = mapped_column(
         Integer, ForeignKey("plan.id"), nullable=True
     )
+    plan = relationship('Plan')
+    payments = relationship('Payment', back_populates='user')
     is_active: bool = Column(Boolean, default=True, nullable=False)
     is_trial: bool = Column(Boolean, default=True, nullable=False)
     is_superuser: bool = Column(Boolean, default=False, nullable=False)
@@ -59,16 +57,6 @@ class User(CustomSQLAlchemyBaseUserTable[int], Base):
     registered_at = Column(
         TIMESTAMP(timezone=False), nullable=False, default=datetime.utcnow
     )
-
-
-class Plan(Base):
-    __tablename__ = 'plan'
-
-    id = Column(Integer, primary_key=True)
-    name: str = Column(
-        String(length=1024), default='none', nullable=False
-    )
-    description: str = Column(String(length=1024), nullable=True)
 
 
 class Server(Base):
@@ -93,24 +81,3 @@ class Protocol(Base):
     name: str = Column(
         String(length=100), nullable=False
     )
-
-
-class Payment(Base):
-    __tablename__ = 'payment'
-
-    id = Column(Integer, primary_key=True)
-    description: str = Column(
-        String(length=128), nullable=True
-    )
-    created_at = Column(
-        TIMESTAMP(timezone=False), nullable=False, default=datetime.utcnow
-    )
-    amount: int = Column(Integer, nullable=False)
-
-    user_id = mapped_column(
-        Integer, ForeignKey("user.id")
-    )
-    plan_id = mapped_column(
-        Integer, ForeignKey("plan.id")
-    )
-    outstanding_balance: int = Column(Integer)

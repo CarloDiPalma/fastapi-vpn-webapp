@@ -8,7 +8,8 @@ from fastapi_users.db import SQLAlchemyUserDatabase
 from sqlalchemy.exc import IntegrityError
 
 from app import schemas
-from app.db import User, get_user_db
+from app.db import get_user_db
+from app.models import User
 
 SECRET = "Some_SECRET"
 
