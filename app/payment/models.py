@@ -3,11 +3,11 @@ from sqlalchemy import (TIMESTAMP, Column, ForeignKey, Integer, String)
 from sqlalchemy.orm import mapped_column, relationship
 
 from app.db import Base
-# from app.models import User
+from app.models import User
 
 
-class Plan(Base):
-    __tablename__ = 'plan'
+class Tariff(Base):
+    __tablename__ = 'tariff'
 
     id = Column(Integer, primary_key=True)
     name: str = Column(
@@ -32,7 +32,7 @@ class Payment(Base):
         Integer, ForeignKey("user.id")
     )
     user = relationship('User')
-    plan_id = mapped_column(
-        Integer, ForeignKey("plan.id")
+    tariff_id = mapped_column(
+        Integer, ForeignKey("tariff.id")
     )
     outstanding_balance: int = Column(Integer)

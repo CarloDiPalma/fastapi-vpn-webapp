@@ -13,7 +13,7 @@ from starlette.responses import JSONResponse
 
 from app.db import get_db
 from app.models import Protocol, User
-# from app.payment.models import Payment
+from app.payment.models import Payment
 from app.payment.router import rout
 from app.permissions import superuser_only
 from app.schemas import AuthData

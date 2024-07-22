@@ -5,7 +5,7 @@ from app.models import User
 from app.payment.models import Payment
 from app.users import current_active_user
 
-from app.schemas import Payment as PaymentIn
+from app.payment.schemas import Payment as PaymentIn
 
 from fastapi import APIRouter
 

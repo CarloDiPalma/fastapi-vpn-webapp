@@ -45,11 +45,11 @@ class User(CustomSQLAlchemyBaseUserTable[int], Base):
     protocol_id = mapped_column(
         Integer, ForeignKey("protocol.id"), nullable=True
     )
-    plan_id = mapped_column(
-        Integer, ForeignKey("plan.id"), nullable=True
+    tariff_id = mapped_column(
+        Integer, ForeignKey("tariff.id"), nullable=True
     )
-    plan = relationship('Plan')
-    payments = relationship('Payment', back_populates='user')
+    tariff = relationship('Tariff')
+    payment = relationship('Payment', back_populates='user')
     is_active: bool = Column(Boolean, default=True, nullable=False)
     is_trial: bool = Column(Boolean, default=True, nullable=False)
     is_superuser: bool = Column(Boolean, default=False, nullable=False)

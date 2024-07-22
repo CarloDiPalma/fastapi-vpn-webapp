@@ -11,7 +11,7 @@ class UserCreate(CreateUpdateDictModel):
     full_name: str
     parent_id: Optional[int]
     protocol_id: Optional[int]
-    plan_id: Optional[int]
+    tariff_id: Optional[int]
     is_active: Optional[bool] = True
     is_superuser: Optional[bool] = False
     is_verified: Optional[bool] = False
@@ -25,7 +25,7 @@ class UserRead(BaseModel):
     full_name: str
     parent_id: int
     protocol_id: int
-    plan_id: Optional[int]
+    tariff_id: Optional[int]
     is_active: bool
     is_trial: bool
     is_superuser: bool
@@ -44,25 +44,12 @@ class UserUpdate(BaseUserUpdate):
     full_name: str
     parent_id: int
     protocol_id: int
-    plan_id: Optional[int]
+    tariff_id: Optional[int]
     is_active: bool
     is_trial: bool
     is_superuser: bool
     is_verified: bool
     registered_at: datetime
-
-
-class Payment(BaseModel):
-    description: str
-    amount: int
-    user_id: int
-    plan_id: int
-    outstanding_balance: int
-
-
-class PaymentOut(Payment):
-    id: int
-    created_at: datetime
 
 
 class Protocol(BaseModel):

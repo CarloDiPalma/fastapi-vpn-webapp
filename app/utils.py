@@ -83,5 +83,7 @@ async def simple_get_user_from_db(pk: int, db: AsyncSession) -> User:
 
 
 async def generate_custom_token(user: User):
-    token = await jwt_authentication.write_token(user)
-    return {"token": token}
+    if user:
+        token = await jwt_authentication.write_token(user)
+        return {"token": token}
+
