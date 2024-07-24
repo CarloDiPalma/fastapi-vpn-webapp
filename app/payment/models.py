@@ -13,6 +13,8 @@ class Tariff(Base):
     name: str = Column(
         String(length=1024), default='none', nullable=False
     )
+    price: int = Column(Integer, nullable=False, default=199)
+    days: int = Column(Integer, nullable=False, default=30)
     description: str = Column(String(length=1024), nullable=True)
 
 

@@ -25,6 +25,19 @@ async def test_get_user_from_db_function():
 
 
 @pytest.mark.asyncio
+async def test_get_tariffs(async_client):
+    response = await async_client.get(
+        API_PREFIX + "/tariff",
+        # headers={"Authorization": f"Bearer {auth_token}"}
+    )
+    assert response.status_code == 200
+    data = response.json()
+    print('DATA!', data)
+    assert isinstance(data, list)
+    # assert "id" in data[0]
+
+
+@pytest.mark.asyncio
 async def test_create_payment(async_client, auth_token):
     """Authenticated user creates payment."""
     response = await async_client.post(

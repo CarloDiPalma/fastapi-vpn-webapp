@@ -6,6 +6,7 @@ from sqlalchemy.orm import sessionmaker
 from main import BASE_DIR, app, get_db, User
 
 from app.models import Base
+from app.payment.models import Tariff
 from app.utils import generate_custom_token
 
 TEST_DB_PATH = os.path.join(BASE_DIR, "test.sqlite3")
@@ -57,7 +58,19 @@ async def create_test_user(async_client):
 
 
 @pytest_asyncio.fixture(scope="module")
+async def create_test_tariff(async_client):
+    async with TestSessionLocal() as session:
+        # Создаем тестовые тарифы
+        tariff = Tariff(name='Base', price=199, days=30)
+        session.add(tariff)
+        await session.commit()
+        await session.refresh(tariff)
+        return tariff
+
+
+@pytest_asyncio.fixture(scope="module")
 async def auth_token(create_test_user):
     # Создаем токен для тестового пользователя
     access_token = await generate_custom_token(create_test_user)
+    print(f"Generated token: {access_token.get('token')} for {create_test_user.username}")
     return access_token.get('token')
