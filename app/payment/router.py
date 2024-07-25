@@ -72,4 +72,5 @@ async def payment_notification(
     db: AsyncSession = Depends(get_db),
 ):
     json_body = await request.json()
+    print(json_body)
     return {"received_json": json_body}
