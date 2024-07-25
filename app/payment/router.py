@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, Request
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db import get_db
@@ -43,8 +43,6 @@ async def create_payment(
     db.add(db_payment)
     await db.commit()
     await db.refresh(db_payment)
-    payment_id = db_payment.id
-    created_at = db_payment.created_at
     return db_payment
 
 
@@ -66,3 +64,12 @@ async def create_tariff(
     await db.commit()
     await db.refresh(db_tariff)
     return db_tariff
+
+
+@rout.post("/payment-notification", tags=["payment"])
+async def payment_notification(
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+):
+    json_body = await request.json()
+    return {"received_json": json_body}
