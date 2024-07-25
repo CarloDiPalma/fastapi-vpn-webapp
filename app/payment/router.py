@@ -1,11 +1,12 @@
 from typing import List
 
-from fastapi import Depends
+from fastapi import Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db import get_db
 from app.models import User
-from app.payment.models import Payment, Tariff
+from app.payment.kassa import create_yookassa_payment
+from app.payment.models import Payment, Tariff, StatusEnum
 from app.payment.schemas import Tariff as TariffIn, TariffOut, PaymentOut
 from app.users import current_active_user
 
@@ -22,10 +23,28 @@ async def create_payment(
     db: AsyncSession = Depends(get_db),
     user: User = Depends(current_active_user)
 ):
-    db_payment = Payment(user_id=user.id, **payment.dict())
+    user_id = user.id
+    tg_id = user.tg_id
+    tariff_id = payment.tariff_id
+    description = payment.description
+    result = await db.execute(select(Tariff).filter(Tariff.id == tariff_id))
+    tariff = result.scalars().first()
+    if tariff is None:
+        raise HTTPException(status_code=404, detail="Tariff not found")
+    amount = tariff.price
+    payment_url, payment_uuid = create_yookassa_payment(
+        amount, tg_id, description
+    )
+    db_payment = Payment(
+        user_id=user_id, amount=amount, status=StatusEnum.created,
+        payment_uuid=payment_uuid, outstanding_balance=0,
+        payment_url=payment_url, **payment.dict()
+    )
     db.add(db_payment)
     await db.commit()
     await db.refresh(db_payment)
+    payment_id = db_payment.id
+    created_at = db_payment.created_at
     return db_payment
 
 
@@ -38,7 +57,7 @@ async def get_all_tariffs(
 
 
 @rout.post("/tariff", response_model=TariffOut, tags=["payment"])
-async def get_all_tariffs(
+async def create_tariff(
     tariff: TariffIn,
     db: AsyncSession = Depends(get_db),
 ):

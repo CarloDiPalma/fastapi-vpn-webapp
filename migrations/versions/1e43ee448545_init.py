@@ -1,8 +1,8 @@
-"""Initial
+"""Init
 
-Revision ID: 12524bf64db0
+Revision ID: 1e43ee448545
 Revises: 
-Create Date: 2024-07-22 17:43:16.551432
+Create Date: 2024-07-25 12:56:06.242175
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '12524bf64db0'
+revision: str = '1e43ee448545'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -36,7 +36,7 @@ def upgrade() -> None:
     )
     op.create_table('tariff',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('name', sa.String(length=1024), nullable=False),
+    sa.Column('name', sa.String(length=140), nullable=False),
     sa.Column('price', sa.Integer(), nullable=False),
     sa.Column('days', sa.Integer(), nullable=False),
     sa.Column('description', sa.String(length=1024), nullable=True),
@@ -70,6 +70,9 @@ def upgrade() -> None:
     sa.Column('user_id', sa.Integer(), nullable=True),
     sa.Column('tariff_id', sa.Integer(), nullable=True),
     sa.Column('outstanding_balance', sa.Integer(), nullable=True),
+    sa.Column('payment_uuid', sa.String(length=128), nullable=False),
+    sa.Column('payment_url', sa.String(length=300), nullable=False),
+    sa.Column('status', sa.Enum('succeeded', 'created', name='statusenum'), nullable=False),
     sa.ForeignKeyConstraint(['tariff_id'], ['tariff.id'], ),
     sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
     sa.PrimaryKeyConstraint('id')

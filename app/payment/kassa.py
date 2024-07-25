@@ -13,7 +13,7 @@ Configuration.account_id = SHOP_ID
 Configuration.secret_key = SECRET_KEY
 
 
-def create(amount, chat_id):
+def create_yookassa_payment(amount, tg_id, description):
     id_key = str(uuid.uuid4())
 
     payment = Payment.create({
@@ -23,12 +23,13 @@ def create(amount, chat_id):
         },
         "confirmation": {
             "type": "redirect",
-            "return_url": "https://t.me/roquentin_bot"
+            "return_url": "https://t.me/SupaVPN_bot"
         },
         "capture": True,
         "metadata": {
-            'chat_id': chat_id
+            "tg_id": tg_id
         },
-        "description": "Тестовый Заказ №1"
+        "description": description
     }, id_key)
+    print(payment.confirmation.confirmation_url, payment.id)
     return payment.confirmation.confirmation_url, payment.id

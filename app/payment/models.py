@@ -1,5 +1,8 @@
 from datetime import datetime
-from sqlalchemy import (TIMESTAMP, Column, ForeignKey, Integer, String)
+from enum import Enum
+from sqlalchemy import (
+    TIMESTAMP, Column, ForeignKey, Integer, String, Enum as SQLAEnum
+)
 from sqlalchemy.orm import mapped_column, relationship
 
 from app.db import Base
@@ -11,11 +14,16 @@ class Tariff(Base):
 
     id = Column(Integer, primary_key=True)
     name: str = Column(
-        String(length=1024), default='none', nullable=False
+        String(length=140), default='none', nullable=False
     )
     price: int = Column(Integer, nullable=False, default=199)
     days: int = Column(Integer, nullable=False, default=30)
     description: str = Column(String(length=1024), nullable=True)
+
+
+class StatusEnum(str, Enum):
+    succeeded = "succeeded"
+    created = "created"
 
 
 class Payment(Base):
@@ -38,3 +46,10 @@ class Payment(Base):
         Integer, ForeignKey("tariff.id")
     )
     outstanding_balance: int = Column(Integer)
+    payment_uuid: str = Column(
+        String(length=128), nullable=False
+    )
+    payment_url: str = Column(
+        String(length=300), nullable=False
+    )
+    status = Column(SQLAEnum(StatusEnum), nullable=False)
