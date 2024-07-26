@@ -23,7 +23,7 @@ def create_yookassa_payment(amount, tg_id, description):
         },
         "confirmation": {
             "type": "redirect",
-            "return_url": "https://t.me/SupaVPN_bot"
+            "return_url": "https://vpntelegram.ru"
         },
         "capture": True,
         "metadata": {

@@ -25,7 +25,7 @@ from app.users import current_active_user, fastapi_users
 from app.utils import (extract_user_id, generate_custom_token,
                        get_user_from_db, simple_get_user_from_db,
                        validate_data_check_string, validate_init_data)
-
+from fastapi.middleware.cors import CORSMiddleware
 
 load_dotenv()
 
@@ -33,6 +33,21 @@ BASE_DIR = Path(__file__).resolve().parent
 
 BOT_TOKEN = os.getenv('BOT_TOKEN')
 app = FastAPI()
+
+origins = [
+    "http://localhost",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+    "http://localhost:5173",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 router = APIRouter(prefix="/api")
 
