@@ -31,8 +31,9 @@ async def create_payment(
     if tariff is None:
         raise HTTPException(status_code=404, detail="Tariff not found")
     amount = tariff.price
+    metadata = {"tg_id": tg_id, "tariff_id": tariff_id, "user_id": user_id}
     payment_url, payment_uuid = create_yookassa_payment(
-        amount, tg_id, description
+        amount, metadata, description
     )
     db_payment = Payment(
         user_id=user_id, amount=amount, status=StatusEnum.created,
@@ -71,6 +72,26 @@ async def payment_notification(
     db: AsyncSession = Depends(get_db),
 ):
     json_body = await request.json()
+    if not json_body:
+        print('No JSON')
     print(json_body)
+    obj = json_body.get("object")
+    description = obj.get("description")
+    status = obj.get("status")
+    amount = obj.get("amount").get("value")
+    payment_uuid = obj.get("id")
+    metadata = obj.get("metadata")
+    tariff_id = metadata.get("tariff_id")
+    user_id = metadata.get("user_id")
+
+    db_payment = Payment(
+        description=description, status=status, amount=amount,
+        payment_uuid=payment_uuid, tariff_id=tariff_id, user_id=user_id,
+        payment_url="None", outstanding_balance=1000
+    )
+    db.add(db_payment)
+    await db.commit()
+    await db.refresh(db_payment)
+
     return {"received_json": json_body}
 

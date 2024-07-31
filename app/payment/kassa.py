@@ -13,7 +13,7 @@ Configuration.account_id = SHOP_ID
 Configuration.secret_key = SECRET_KEY
 
 
-def create_yookassa_payment(amount, tg_id, description):
+def create_yookassa_payment(amount, metadata: dict, description):
     id_key = str(uuid.uuid4())
 
     payment = Payment.create({
@@ -27,9 +27,9 @@ def create_yookassa_payment(amount, tg_id, description):
         },
         "capture": True,
         "metadata": {
-            "tg_id": tg_id
+            **metadata
         },
         "description": description
     }, id_key)
-    print(payment.confirmation.confirmation_url, payment.id)
+    print(payment.confirmation.confirmation_url, payment.id, payment.metadata)
     return payment.confirmation.confirmation_url, payment.id
