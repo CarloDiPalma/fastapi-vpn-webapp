@@ -61,7 +61,7 @@ async def create_test_user(async_client):
 async def create_test_tariff(async_client):
     async with TestSessionLocal() as session:
         # Создаем тестовые тарифы
-        tariff = Tariff(name='Base', price=199, days=30)
+        tariff = Tariff(name="Base", price=199, days=30, description="Base")
         session.add(tariff)
         await session.commit()
         await session.refresh(tariff)

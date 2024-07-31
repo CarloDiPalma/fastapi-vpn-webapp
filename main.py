@@ -12,11 +12,10 @@ from sqlalchemy.orm import Session
 from starlette.responses import JSONResponse
 
 from app.db import get_db
-from app.models import Protocol, User
-from app.payment.models import Payment
+from app.models import Protocol, User, Server
 from app.payment.router import rout
 from app.permissions import superuser_only
-from app.schemas import AuthData
+from app.schemas import AuthData, ServerRequest, ServerResponse
 
 from app.schemas import Protocol as ProtocolIn
 from app.schemas import (ProtocolOut, SimpleAuthData, UserCreate, UserRead,
@@ -99,6 +98,28 @@ async def authenticated_route(user: User = Depends(current_active_user)):
 @router.get("/some-endpoint")
 async def some_route():
     return {"message": "Hello!"}
+
+
+@router.post("/server/")
+async def add_server(
+    server: ServerRequest,
+    user: dict = Depends(superuser_only),
+    db: AsyncSession = Depends(get_db),
+):
+    db_server = Server(**server.dict())
+    db.add(db_server)
+    await db.commit()
+    await db.refresh(db_server)
+    return db_server
+
+
+@router.get("/server/", response_model=List[ServerResponse])
+async def get_servers(
+    user: dict = Depends(superuser_only),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(select(Server))
+    return result.scalars().all()
 
 
 @router.get("/admin/")

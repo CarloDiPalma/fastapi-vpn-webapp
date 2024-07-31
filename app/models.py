@@ -63,6 +63,7 @@ class Server(Base):
     __tablename__ = 'server'
 
     id = Column(Integer, primary_key=True)
+    name: str = Column(String(length=140), nullable=True)
     ip: str = Column(
         String(length=100), nullable=True
     )

@@ -66,3 +66,17 @@ class AuthData(BaseModel):
 
 class SimpleAuthData(BaseModel):
     id: int
+
+
+class ServerRequest(BaseModel):
+    name: str
+    ip: str
+    password: str
+    is_active: bool
+    description: str
+    user_count: int
+
+
+class ServerResponse(ServerRequest):
+    id: int
+

@@ -7,11 +7,10 @@ from app.db import get_db
 from app.models import User
 from app.payment.kassa import create_yookassa_payment
 from app.payment.models import Payment, Tariff, StatusEnum
-from app.payment.schemas import Tariff as TariffIn, TariffOut, PaymentOut
+from app.payment.schemas import (
+    Tariff as TariffIn, TariffOut, PaymentOut, Payment as PaymentIn
+)
 from app.users import current_active_user
-
-from app.payment.schemas import Payment as PaymentIn
-
 from fastapi import APIRouter
 
 rout = APIRouter(prefix="/api")

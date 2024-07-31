@@ -38,16 +38,13 @@ async def test_get_tariffs(async_client):
 
 
 @pytest.mark.asyncio
-async def test_create_payment(async_client, auth_token):
+async def test_create_payment(async_client, auth_token, create_test_tariff):
     """Authenticated user creates payment."""
     response = await async_client.post(
         API_PREFIX + "/payment",
         json={
             "description": "string",
-            "amount": 20,
-            "user_id": 1,
             "tariff_id": 1,
-            "outstanding_balance": 0
         },
         headers={"Authorization": f"Bearer {auth_token}"}
     )
