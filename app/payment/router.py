@@ -46,6 +46,17 @@ async def create_payment(
     return db_payment
 
 
+@rout.get("/payment/me", tags=["payment"], response_model=List[PaymentOut])
+async def get_current_user_payments(
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(current_active_user)
+):
+    result = await db.execute(
+        select(Payment).filter(Payment.user_id == user.id)
+    )
+    return result.scalars().all()
+
+
 @rout.get("/tariff", response_model=List[TariffOut], tags=["payment"])
 async def get_all_tariffs(
     db: AsyncSession = Depends(get_db),
