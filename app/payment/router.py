@@ -1,15 +1,16 @@
 from typing import List
 
 from fastapi import Depends, HTTPException, Request
-from sqlalchemy import select
+from sqlalchemy import select, asc
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db import get_db
-from app.models import User
+from app.models import User, Server
 from app.payment.kassa import create_yookassa_payment
 from app.payment.models import Payment, Tariff, StatusEnum
 from app.payment.schemas import (
     Tariff as TariffIn, TariffOut, PaymentOut, Payment as PaymentIn
 )
+from app.payment.utils import create_db_payment
 from app.users import current_active_user
 from fastapi import APIRouter
 
@@ -83,26 +84,10 @@ async def payment_notification(
     db: AsyncSession = Depends(get_db),
 ):
     json_body = await request.json()
-    if not json_body:
-        print('No JSON')
-    print(json_body)
-    obj = json_body.get("object")
-    description = obj.get("description")
-    status = obj.get("status")
-    amount = obj.get("amount").get("value")
-    payment_uuid = obj.get("id")
-    metadata = obj.get("metadata")
-    tariff_id = metadata.get("tariff_id")
-    user_id = metadata.get("user_id")
-
-    db_payment = Payment(
-        description=description, status=status, amount=amount,
-        payment_uuid=payment_uuid, tariff_id=tariff_id, user_id=user_id,
-        payment_url="None", outstanding_balance=1000
-    )
-    db.add(db_payment)
-    await db.commit()
-    await db.refresh(db_payment)
-
+    await create_db_payment(json_body, db)
+    result = await db.execute(
+        select(Server).order_by(asc(Server.user_count)).limit(1))
+    server = result.scalars().first()
+    print(server.name, server.user_count)
     return {"received_json": json_body}
 
