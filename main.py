@@ -100,7 +100,7 @@ async def some_route():
     return {"message": "Hello!"}
 
 
-@router.post("/server/")
+@router.post("/server/", tags=["server"])
 async def add_server(
     server: ServerRequest,
     user: dict = Depends(superuser_only),
@@ -113,7 +113,7 @@ async def add_server(
     return db_server
 
 
-@router.get("/server/", response_model=List[ServerResponse])
+@router.get("/server/", response_model=List[ServerResponse], tags=["server"])
 async def get_servers(
     user: dict = Depends(superuser_only),
     db: AsyncSession = Depends(get_db),

@@ -72,6 +72,7 @@ class ServerRequest(BaseModel):
     name: str
     ip: str
     password: str
+    uri_path: str
     is_active: bool
     description: str
     user_count: int

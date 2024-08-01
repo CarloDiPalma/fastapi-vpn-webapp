@@ -70,6 +70,9 @@ class Server(Base):
     password: str = Column(
         String(length=100), nullable=True
     )
+    uri_path: str = Column(
+        String(length=100), nullable=True
+    )
     is_active: bool = Column(Boolean, default=False, nullable=False)
     description: str = Column(String(length=1024), nullable=True)
     user_count: int = Column(BigInteger, nullable=True)
