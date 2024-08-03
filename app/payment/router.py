@@ -1,10 +1,10 @@
 from typing import List
 
 from fastapi import Depends, HTTPException, Request
-from sqlalchemy import select, asc
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db import get_db
-from app.models import User, Server
+from app.models import User
 from app.payment.kassa import create_yookassa_payment
 from app.payment.models import Payment, Tariff, StatusEnum
 from app.payment.schemas import (
@@ -85,9 +85,6 @@ async def payment_notification(
 ):
     json_body = await request.json()
     await create_db_payment(json_body, db)
-    result = await db.execute(
-        select(Server).order_by(asc(Server.user_count)).limit(1))
-    server = result.scalars().first()
-    print(server.name, server.user_count)
+
     return {"received_json": json_body}
 

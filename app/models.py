@@ -67,6 +67,18 @@ class Server(Base):
     ip: str = Column(
         String(length=100), nullable=True
     )
+    port: str = Column(
+        String(length=5), nullable=True
+    )
+    port_key: str = Column(
+        String(length=5), nullable=True
+    )
+    short_id: str = Column(
+        String(length=10), nullable=True
+    )
+    public_key: str = Column(
+        String(length=100), nullable=True
+    )
     password: str = Column(
         String(length=100), nullable=True
     )

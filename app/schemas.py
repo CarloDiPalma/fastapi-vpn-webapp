@@ -81,3 +81,8 @@ class ServerRequest(BaseModel):
 class ServerResponse(ServerRequest):
     id: int
 
+
+class ClientRequest(BaseModel):
+    id: int
+    # settings: str
+
