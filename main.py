@@ -12,20 +12,22 @@ from sqlalchemy.orm import Session
 from starlette.responses import JSONResponse
 
 from app.db import get_db
+from app.exceptions import AddClientPanelError
 from app.models import Protocol, User, Server
 from app.payment.router import rout
 from app.permissions import superuser_only
-from app.schemas import AuthData, ServerRequest, ServerResponse, ClientRequest
+from app.schemas import AuthData, ServerRequest, ServerResponse
 
 from app.schemas import Protocol as ProtocolIn
 from app.schemas import (ProtocolOut, SimpleAuthData, UserCreate, UserRead,
                          UserUpdate)
 from app.users import current_active_user, fastapi_users
-from app.utils import (extract_user_id, generate_custom_token,
-                       get_user_from_db, simple_get_user_from_db,
-                       validate_data_check_string, validate_init_data,
-                       create_new_client, get_most_unloaded_server,
-                       get_key_params, create_vless_key)
+from app.utils import (
+    extract_user_id, generate_custom_token, get_user_from_db,
+    simple_get_user_from_db, validate_data_check_string, validate_init_data,
+    create_new_client, get_most_unloaded_server, get_key_params,
+    create_vless_key, server_user_count_increment
+)
 from fastapi.middleware.cors import CORSMiddleware
 
 load_dotenv()
@@ -33,6 +35,7 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent
 
 BOT_TOKEN = os.getenv('BOT_TOKEN')
+
 app = FastAPI()
 
 origins = [
@@ -104,7 +107,6 @@ async def some_route():
 
 @router.post("/client/", tags=["client"])
 async def create_client(
-    client: ClientRequest,
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_db)
 ):
@@ -115,18 +117,21 @@ async def create_client(
             detail="Find server Error"
         )
     tg_id = user.tg_id
-    new_client_dict = await create_new_client(tg_id, server)
-    if new_client_dict:
-        params = get_key_params(new_client_dict, server)
-    else:
+    try:
+        new_client_dict = await create_new_client(tg_id, server)
+    except AddClientPanelError as e:
+        raise HTTPException(status_code=500, detail=e.detail)
+    except Exception as e:
         raise HTTPException(
-            status_code=500,
-            detail="Create client panel Error"
+            status_code=500, detail="An unexpected error occurred)"
         )
+    await server_user_count_increment(server, db)
+    params = get_key_params(new_client_dict, server)
+
     if key := create_vless_key(params):
         return {"success": True, "vless_key": key}
     else:
-        raise HTTPException(status_code=400, detail="Error")
+        raise HTTPException(status_code=500, detail="Key generation error(")
 
 
 @router.post("/server/", tags=["server"])

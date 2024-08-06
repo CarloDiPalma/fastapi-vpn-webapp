@@ -1,8 +1,8 @@
 """Init
 
-Revision ID: 3317be10435c
+Revision ID: 6072c3b13609
 Revises: 
-Create Date: 2024-08-01 09:16:22.409636
+Create Date: 2024-08-06 10:46:07.260113
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '3317be10435c'
+revision: str = '6072c3b13609'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -29,6 +29,11 @@ def upgrade() -> None:
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(length=140), nullable=True),
     sa.Column('ip', sa.String(length=100), nullable=True),
+    sa.Column('port_panel', sa.String(length=5), nullable=True),
+    sa.Column('port_key', sa.String(length=5), nullable=True),
+    sa.Column('short_id', sa.String(length=10), nullable=True),
+    sa.Column('public_key', sa.String(length=100), nullable=True),
+    sa.Column('vless_inbound_id', sa.Integer(), nullable=True),
     sa.Column('password', sa.String(length=100), nullable=True),
     sa.Column('uri_path', sa.String(length=100), nullable=True),
     sa.Column('is_active', sa.Boolean(), nullable=False),

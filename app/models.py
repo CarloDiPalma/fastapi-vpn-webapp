@@ -48,8 +48,8 @@ class User(CustomSQLAlchemyBaseUserTable[int], Base):
     tariff_id = mapped_column(
         Integer, ForeignKey("tariff.id"), nullable=True
     )
-    tariff = relationship('Tariff')
     payment = relationship('Payment', back_populates='user')
+    tariff = relationship('Tariff')
     is_active: bool = Column(Boolean, default=True, nullable=False)
     is_trial: bool = Column(Boolean, default=True, nullable=False)
     is_superuser: bool = Column(Boolean, default=False, nullable=False)
@@ -64,28 +64,15 @@ class Server(Base):
 
     id = Column(Integer, primary_key=True)
     name: str = Column(String(length=140), nullable=True)
-    ip: str = Column(
-        String(length=100), nullable=True
-    )
-    port: str = Column(
-        String(length=5), nullable=True
-    )
-    port_key: str = Column(
-        String(length=5), nullable=True
-    )
-    short_id: str = Column(
-        String(length=10), nullable=True
-    )
-    public_key: str = Column(
-        String(length=100), nullable=True
-    )
-    password: str = Column(
-        String(length=100), nullable=True
-    )
-    uri_path: str = Column(
-        String(length=100), nullable=True
-    )
-    is_active: bool = Column(Boolean, default=False, nullable=False)
+    ip: str = Column(String(length=100))
+    port_panel: str = Column(String(length=5))
+    port_key: str = Column(String(length=5))
+    short_id: str = Column(String(length=10))
+    public_key: str = Column(String(length=100))
+    vless_inbound_id: int = Column(Integer, default=1)
+    password: str = Column(String(length=100), nullable=True)
+    uri_path: str = Column(String(length=100))
+    is_active: bool = Column(Boolean, default=True, nullable=False)
     description: str = Column(String(length=1024), nullable=True)
     user_count: int = Column(BigInteger, nullable=True)
 

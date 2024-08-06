@@ -9,9 +9,9 @@ class UserCreate(CreateUpdateDictModel):
     tg_id: int
     username: str
     full_name: str
-    parent_id: Optional[int]
-    protocol_id: Optional[int]
-    tariff_id: Optional[int]
+    parent_id: Optional[int] = None
+    protocol_id: Optional[int] = None
+    tariff_id: Optional[int] = None
     is_active: Optional[bool] = True
     is_superuser: Optional[bool] = False
     is_verified: Optional[bool] = False
@@ -23,9 +23,9 @@ class UserRead(BaseModel):
     tg_id: int
     subscription: str
     full_name: str
-    parent_id: int
-    protocol_id: int
-    tariff_id: Optional[int]
+    parent_id: Optional[int] = None
+    protocol_id: Optional[int] = None
+    tariff_id: Optional[int] = None
     is_active: bool
     is_trial: bool
     is_superuser: bool
@@ -71,6 +71,11 @@ class SimpleAuthData(BaseModel):
 class ServerRequest(BaseModel):
     name: str
     ip: str
+    port_panel: str
+    port_key: str
+    short_id: str
+    public_key: str
+    vless_inbound_id: int
     password: str
     uri_path: str
     is_active: bool

@@ -1,5 +1,7 @@
+import os
 from typing import Optional, Union, Dict
 
+from dotenv import load_dotenv
 from fastapi import Depends, Request
 from fastapi_users import BaseUserManager, FastAPIUsers, IntegerIDMixin
 from fastapi_users.authentication import (AuthenticationBackend,
@@ -11,12 +13,13 @@ from app import schemas
 from app.db import get_user_db
 from app.models import User
 
-SECRET = "Some_SECRET"
+load_dotenv()
+SECRET_KEY = os.getenv('SECRET_KEY_USERS')
 
 
 class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
     user_db_model = User
-    verification_token_secret = SECRET
+    verification_token_secret = SECRET_KEY
 
     async def create(
         self,
@@ -31,13 +34,15 @@ class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
         )
         try:
             created_user = await self.user_db.create(user_dict)
+            await self.on_after_register(created_user, request)
+            return created_user
+        except Exception as e:
+            print(e)
         except IntegrityError as e:
             if 'UNIQUE constraint failed: user.tg_id' in str(e.orig):
                 return {
                     "error": "Пользователь с таким tg_id уже существует"
                 }
-        await self.on_after_register(created_user, request)
-        return created_user
 
     async def update(
         self,
@@ -90,11 +95,11 @@ async def get_user_manager(
 
 bearer_transport = BearerTransport(tokenUrl="auth/jwt/login")
 
-jwt_authentication = JWTStrategy(secret=SECRET, lifetime_seconds=3600)
+jwt_authentication = JWTStrategy(secret=SECRET_KEY, lifetime_seconds=3600)
 
 
 def get_jwt_strategy() -> JWTStrategy:
-    return JWTStrategy(secret=SECRET, lifetime_seconds=3600)
+    return JWTStrategy(secret=SECRET_KEY, lifetime_seconds=3600)
 
 
 auth_backend = AuthenticationBackend(

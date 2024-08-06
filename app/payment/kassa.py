@@ -7,10 +7,10 @@ from yookassa import Configuration, Payment
 load_dotenv()
 
 SHOP_ID = os.getenv('shopid')
-SECRET_KEY = os.getenv('SECRET_KEY')
+SECRET_KEY_YOOKASSA = os.getenv('SECRET_KEY_YOOKASSA')
 
 Configuration.account_id = SHOP_ID
-Configuration.secret_key = SECRET_KEY
+Configuration.secret_key = SECRET_KEY_YOOKASSA
 
 
 def create_yookassa_payment(amount, metadata: dict, description):

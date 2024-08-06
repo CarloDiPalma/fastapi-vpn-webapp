@@ -14,6 +14,7 @@ from httpx import AsyncClient
 from sqlalchemy import select, asc
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.exceptions import AddClientPanelError
 from app.models import User, Server
 from app.users import jwt_authentication
 
@@ -114,21 +115,28 @@ async def create_new_client(
     """Send request to panel to create new client."""
     new_uuid = uuid.uuid4()
     ip = server.ip
-    port = server.port
+    port = server.port_panel
     uri_path = server.uri_path
     ADD_CLIENT_API_PATH = "panel/api/inbounds/addClient"
     api_panel_url = f"https://{ip}:{port}/{uri_path}/{ADD_CLIENT_API_PATH}"
     TRIAL_DAYS = 3
     expiry_unix_time = generate_unixtime_for_days(TRIAL_DAYS)
     settings = dict_to_api_string(new_uuid, tg_id, expiry_unix_time)
+    vless_inbound_id = server.vless_inbound_id
     try:
         status_code, response_json = await add_client_panel_request(
-            settings, api_panel_url
+            vless_inbound_id, settings, api_panel_url
         )
         if status_code == 200 and response_json.get("success"):
             return {"new_client_uuid": new_uuid, "ip": ip}
     except:
-        return {}
+        raise AddClientPanelError(detail="Create client panel Error(")
+
+
+async def server_user_count_increment(server, db):
+    server.user_count += 1
+    await db.commit()
+    await db.refresh(server)
 
 
 def get_key_params(base_dict: dict, server: Server) -> dict:
@@ -153,8 +161,8 @@ def create_vless_key(params: dict) -> str:
     return key
 
 
-async def add_client_panel_request(settings, url):
-    payload = {"id": 1, "settings": settings}
+async def add_client_panel_request(vless_inbound_id, settings, url):
+    payload = {"id": vless_inbound_id, "settings": settings}
     headers = {
         'Accept': 'application/json',
         'Cookie': COOKIE
