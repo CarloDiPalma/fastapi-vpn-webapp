@@ -88,6 +88,10 @@ class ServerResponse(ServerRequest):
 
 
 class ClientRequest(BaseModel):
-    id: int
-    # settings: str
+    pass
+
+
+class ClientResponse(ClientRequest):
+    success: bool
+    vless_key: str
 

@@ -16,7 +16,7 @@ from app.exceptions import AddClientPanelError
 from app.models import Protocol, User, Server
 from app.payment.router import rout
 from app.permissions import superuser_only
-from app.schemas import AuthData, ServerRequest, ServerResponse
+from app.schemas import AuthData, ServerRequest, ServerResponse, ClientResponse
 
 from app.schemas import Protocol as ProtocolIn
 from app.schemas import (ProtocolOut, SimpleAuthData, UserCreate, UserRead,
@@ -105,7 +105,7 @@ async def some_route():
     return {"message": "Hello!"}
 
 
-@router.post("/client/", tags=["client"])
+@router.post("/client/", response_model=ClientResponse, tags=["client"])
 async def create_client(
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_db)
