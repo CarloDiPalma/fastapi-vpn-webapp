@@ -12,9 +12,6 @@ class UserCreate(CreateUpdateDictModel):
     parent_id: Optional[int] = None
     protocol_id: Optional[int] = None
     tariff_id: Optional[int] = None
-    is_active: Optional[bool] = True
-    is_superuser: Optional[bool] = False
-    is_verified: Optional[bool] = False
 
 
 class UserRead(BaseModel):

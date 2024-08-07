@@ -6,12 +6,12 @@ from typing import Literal
 from app.payment.models import StatusEnum
 
 
-class Payment(BaseModel):
+class PaymentRequest(BaseModel):
     description: Optional[str]
     tariff_id: int
 
 
-class PaymentOut(Payment):
+class PaymentResponse(PaymentRequest):
     id: int
     user_id: int
     tariff_id: int

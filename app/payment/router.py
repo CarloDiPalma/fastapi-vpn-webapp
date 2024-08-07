@@ -8,7 +8,7 @@ from app.models import User
 from app.payment.kassa import create_yookassa_payment
 from app.payment.models import Payment, Tariff, StatusEnum
 from app.payment.schemas import (
-    Tariff as TariffIn, TariffOut, PaymentOut, Payment as PaymentIn
+    Tariff as TariffIn, TariffOut, PaymentResponse, PaymentRequest
 )
 from app.payment.utils import create_db_payment
 from app.users import current_active_user
@@ -17,9 +17,9 @@ from fastapi import APIRouter
 rout = APIRouter(prefix="/api")
 
 
-@rout.post("/payment", tags=["payment"], response_model=PaymentOut)
+@rout.post("/payment", tags=["payment"], response_model=PaymentResponse)
 async def create_payment(
-    payment: PaymentIn,
+    payment: PaymentRequest,
     db: AsyncSession = Depends(get_db),
     user: User = Depends(current_active_user)
 ):
@@ -47,7 +47,9 @@ async def create_payment(
     return db_payment
 
 
-@rout.get("/payment/me", tags=["payment"], response_model=List[PaymentOut])
+@rout.get(
+    "/payment/me", tags=["payment"], response_model=List[PaymentResponse]
+)
 async def get_current_user_payments(
     db: AsyncSession = Depends(get_db),
     user: User = Depends(current_active_user)
@@ -85,6 +87,5 @@ async def payment_notification(
 ):
     json_body = await request.json()
     await create_db_payment(json_body, db)
-
     return {"received_json": json_body}
 
