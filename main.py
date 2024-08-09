@@ -14,6 +14,7 @@ from starlette.responses import JSONResponse
 from app.db import get_db
 from app.exceptions import AddClientPanelError
 from app.models import Protocol, User, Server
+from app.payment.router import rout as panel_rout
 from app.payment.router import rout
 from app.permissions import superuser_only
 from app.schemas import AuthData, ServerRequest, ServerResponse, ClientResponse
@@ -25,8 +26,8 @@ from app.users import current_active_user, fastapi_users
 from app.utils import (
     extract_user_id, generate_custom_token, get_user_from_db,
     simple_get_user_from_db, validate_data_check_string, validate_init_data,
-    create_new_client, get_most_unloaded_server, get_key_params,
-    create_vless_key, server_user_count_increment
+    create_new_client_in_panel, get_most_unloaded_server, get_key_params,
+    create_vless_key, server_user_count_increment, create_new_client_internal
 )
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -118,15 +119,17 @@ async def create_client(
         )
     tg_id = user.tg_id
     try:
-        new_client_dict = await create_new_client(tg_id, server)
+        client_uuid, ip = await create_new_client_in_panel(tg_id, server)
+        create_new_client_internal(db, client_uuid, user.id, tg_id, server.id)
     except AddClientPanelError as e:
         raise HTTPException(status_code=500, detail=e.detail)
     except Exception as e:
+        print(e)
         raise HTTPException(
             status_code=500, detail="An unexpected error occurred)"
         )
     await server_user_count_increment(server, db)
-    params = get_key_params(new_client_dict, server)
+    params = get_key_params(client_uuid, ip, server)
 
     if key := create_vless_key(params):
         return {"success": True, "vless_key": key}
@@ -202,6 +205,8 @@ async def validation_exception_handler(request: Request, exc: ValidationError):
 # Включаем основной маршрутизатор в приложение
 app.include_router(router)
 app.include_router(rout)
+app.include_router(panel_rout)
+
 
 if __name__ == "__main__":
     uvicorn.run(

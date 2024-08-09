@@ -17,7 +17,7 @@ class PaymentResponse(PaymentRequest):
     tariff_id: int
     created_at: datetime
     outstanding_balance: int
-    amount: int
+    amount: str
     payment_url: str
     status: Literal[StatusEnum.succeeded, StatusEnum.created]
     payment_uuid: str

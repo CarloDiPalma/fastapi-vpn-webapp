@@ -36,7 +36,9 @@ class Payment(Base):
     created_at = Column(
         TIMESTAMP(timezone=False), nullable=False, default=datetime.utcnow
     )
-    amount: int = Column(Integer, nullable=False)
+    amount: str = Column(
+        String(length=50), nullable=False
+    )
 
     user_id = mapped_column(
         Integer, ForeignKey("user.id")

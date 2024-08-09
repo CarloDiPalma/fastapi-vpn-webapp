@@ -50,6 +50,10 @@ class User(CustomSQLAlchemyBaseUserTable[int], Base):
     )
     payment = relationship('Payment', back_populates='user')
     tariff = relationship('Tariff')
+    server_id = mapped_column(
+        Integer, ForeignKey("server.id"), nullable=True
+    )
+    server = relationship('Server')
     is_active: bool = Column(Boolean, default=True, nullable=False)
     is_trial: bool = Column(Boolean, default=True, nullable=False)
     is_superuser: bool = Column(Boolean, default=False, nullable=False)

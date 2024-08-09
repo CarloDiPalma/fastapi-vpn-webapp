@@ -10,7 +10,8 @@ from app.payment.models import Payment, Tariff, StatusEnum
 from app.payment.schemas import (
     Tariff as TariffIn, TariffOut, PaymentResponse, PaymentRequest
 )
-from app.payment.utils import create_db_payment
+from app.payment.utils import create_db_payment, get_user_by_id, \
+    get_server_by_id, prolong_key
 from app.users import current_active_user
 from fastapi import APIRouter
 
@@ -86,6 +87,14 @@ async def payment_notification(
     db: AsyncSession = Depends(get_db),
 ):
     json_body = await request.json()
-    await create_db_payment(json_body, db)
+    print(json_body)
+    payment_dict, tg_id = await create_db_payment(json_body, db)
+    user_id = payment_dict.get('user_id')
+    user = await get_user_by_id(db, user_id)
+    server_id = user.server_id
+    if server_id:
+        server = await get_server_by_id(db, server_id)
+        await prolong_key(server, tg_id)
+
     return {"received_json": json_body}
 

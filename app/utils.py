@@ -16,6 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.exceptions import AddClientPanelError
 from app.models import User, Server
+from app.panel.models import Client
 from app.users import jwt_authentication
 
 load_dotenv()
@@ -101,17 +102,19 @@ async def generate_custom_token(user: User):
         return {"token": token}
 
 
-def generate_unixtime_for_days(days) -> int:
-    current_time = time.time()
+def generate_unixtime_for_days(days: int, from_current=True) -> int:
     ONE_DAY_SECONDS = 86400
+    MILLISECONDS = 1000
+    if from_current:
+        current_time = time.time()
+        future_time = (current_time + days * ONE_DAY_SECONDS) * MILLISECONDS
+        return int(future_time)
+    return days * ONE_DAY_SECONDS * MILLISECONDS
 
-    future_time = (current_time + days * ONE_DAY_SECONDS) * 1000
-    return int(future_time)
 
-
-async def create_new_client(
+async def create_new_client_in_panel(
         tg_id: int, server: Server
-) -> dict[str, UUID | str]:
+) -> (UUID, str):
     """Send request to panel to create new client."""
     new_uuid = uuid.uuid4()
     ip = server.ip
@@ -128,7 +131,7 @@ async def create_new_client(
             vless_inbound_id, settings, api_panel_url
         )
         if status_code == 200 and response_json.get("success"):
-            return {"new_client_uuid": new_uuid, "ip": ip}
+            return new_uuid, ip
     except:
         raise AddClientPanelError(detail="Create client panel Error(")
 
@@ -139,14 +142,14 @@ async def server_user_count_increment(server, db):
     await db.refresh(server)
 
 
-def get_key_params(base_dict: dict, server: Server) -> dict:
-    additional_dict = {
+def get_key_params(client_uuid, ip, server: Server) -> dict:
+    return {
         "public_key": server.public_key,
         "short_id": server.short_id,
-        "port_key": server.port_key
+        "port_key": server.port_key,
+        "ip": ip,
+        "new_client_uuid": client_uuid
     }
-    base_dict.update(additional_dict)
-    return base_dict
 
 
 def create_vless_key(params: dict) -> str:
@@ -194,3 +197,14 @@ async def get_most_unloaded_server(db: AsyncSession) -> Server:
     result = await db.execute(
         select(Server).order_by(asc(Server.user_count)).limit(1))
     return result.scalars().first()
+
+
+def create_new_client_internal(db, client_uuid, user_id, tg_id, server_id):
+    email = str(tg_id) + ":Salam_VPN"
+    db_client = Client(
+        uuid=client_uuid, user_id=user_id,
+        email=email, server_id=server_id, is_enabled=True
+    )
+    db.add(db_client)
+    db.commit()
+    db.refresh(db_client)

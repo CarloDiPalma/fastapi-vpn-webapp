@@ -5,6 +5,7 @@ from sqlalchemy import engine_from_config, pool
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
+from app.panel.models import Client
 from app.db import Base
 from app.payment.models import Tariff, Payment
 from app.db import DB_HOST, DB_PORT, DB_USER, DB_PASS, DB_NAME
